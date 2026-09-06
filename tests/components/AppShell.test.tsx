@@ -144,4 +144,34 @@ describe('AppShell component', () => {
 		await user.keyboard('{Escape}')
 		expect(screen.queryByText(/settings/i)).not.toBeInTheDocument()
 	})
+
+	it('resets demo scenario and closes profile menu when reset option is clicked', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<WellwisherProvider>
+				<AppShell activeSurface='today'>
+					<div>Content</div>
+				</AppShell>
+			</WellwisherProvider>,
+		)
+
+		const profileButton = screen.getByRole('button', {
+			name: /profile and settings|harsh dave|account/i,
+		})
+
+		// Open profile menu
+		await user.click(profileButton)
+
+		const resetOption = screen.getByRole('menuitem', {
+			name: /reset demo scenario/i,
+		})
+		expect(resetOption).toBeInTheDocument()
+
+		// Click reset demo scenario
+		await user.click(resetOption)
+
+		// Menu should close
+		expect(screen.queryByRole('menu')).not.toBeInTheDocument()
+	})
 })

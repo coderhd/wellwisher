@@ -78,6 +78,10 @@ export function TodaySurface (): React.JSX.Element {
 		dispatch({ type: 'CANCEL_FOCUS' })
 	}, [dispatch])
 
+	const handleRestNow = useCallback(() => {
+		// Acknowledges user rest choice
+	}, [])
+
 	const dateObj = parseISO(todayDate)
 	const formattedDate = format(dateObj, 'EEEE, MMMM d')
 
@@ -141,7 +145,7 @@ export function TodaySurface (): React.JSX.Element {
 					session={focusSession}
 					intention={focusIntention}
 					nextCommitment={nextProtectedCommitment}
-					onRestNow={() => {}}
+					onRestNow={handleRestNow}
 					onChooseAnother={handleCancelFocus}
 				/>
 			)}

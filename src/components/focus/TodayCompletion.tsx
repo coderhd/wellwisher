@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useState } from 'react'
 
 import type { FocusSessionState } from '../../domain/focus/types'
 import type {
@@ -24,7 +24,10 @@ export function TodayCompletion ({
 	onChooseAnother,
 	className,
 }: TodayCompletionProps): React.JSX.Element {
+	const [isRestAcknowledged, setIsRestAcknowledged] = useState(false)
+
 	const handleRestNow = useCallback(() => {
+		setIsRestAcknowledged(true)
 		if (onRestNow) {
 			onRestNow()
 		}
@@ -100,16 +103,35 @@ export function TodayCompletion ({
 			)}
 
 			<div className={styles.actionsSection}>
+				{isRestAcknowledged && (
+					<div className={styles.restConfirmation} role='status'>
+						<span className={styles.restIcon} aria-hidden='true'>🌿</span>
+						<span>Resting acknowledged. Enjoy your breathing space.</span>
+					</div>
+				)}
+
 				<div className={styles.primaryActionRow}>
-					<button
-						type='button'
-						className={styles.restButton}
-						onClick={handleRestNow}
-						aria-label='Rest now (recommended)'
-					>
-						<span>Rest now</span>
-						<span className={styles.recommendedTag}>Recommended</span>
-					</button>
+					{isRestAcknowledged ? (
+						<button
+							type='button'
+							className={styles.restButtonAcknowledged}
+							disabled
+							aria-label='Resting acknowledged'
+						>
+							<span>Resting acknowledged</span>
+							<span aria-hidden='true'>✓</span>
+						</button>
+					) : (
+						<button
+							type='button'
+							className={styles.restButton}
+							onClick={handleRestNow}
+							aria-label='Rest now (recommended)'
+						>
+							<span>Rest now</span>
+							<span className={styles.recommendedTag}>Recommended</span>
+						</button>
+					)}
 
 					<button
 						type='button'

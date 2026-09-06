@@ -1,5 +1,6 @@
 import { addDays, format, parseISO } from 'date-fns'
 
+import { createDemoState } from '../data/demoScenario'
 import {
 	cancelSession,
 	completeSession,
@@ -419,10 +420,7 @@ export function wellwisherReducer (
 		}
 
 		case 'RESET_STATE': {
-			if (action.payload) {
-				return action.payload
-			}
-			return state
+			return action.payload ?? createDemoState()
 		}
 
 		default: {

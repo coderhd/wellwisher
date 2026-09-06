@@ -98,6 +98,38 @@ describe('TodaySurface component', () => {
 		).toBeInTheDocument()
 	})
 
+	it('provides clean visual feedback when rest now is clicked on completion', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<WellwisherProvider>
+				<TodaySurface />
+			</WellwisherProvider>,
+		)
+
+		const startButton = screen.getByRole('button', {
+			name: /start focus/i,
+		})
+		await user.click(startButton)
+
+		const completeButton = screen.getByRole('button', {
+			name: /complete session/i,
+		})
+		await user.click(completeButton)
+
+		const restButton = screen.getByRole('button', {
+			name: /rest now/i,
+		})
+		await user.click(restButton)
+
+		expect(
+			screen.getByText(/resting acknowledged\. enjoy your breathing space\./i),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /resting acknowledged/i }),
+		).toBeDisabled()
+	})
+
 	it('renders companion perspective message in editorial style', () => {
 		render(
 			<WellwisherProvider>

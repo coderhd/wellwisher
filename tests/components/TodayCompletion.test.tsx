@@ -75,7 +75,7 @@ describe('TodayCompletion component', () => {
 		expect(screen.getByText(/13:30 - 14:30/i)).toBeInTheDocument()
 	})
 
-	it('renders "Rest now" as the primary recommended action', async () => {
+	it('renders "Rest now" as the primary recommended action and provides visual feedback on click', async () => {
 		const user = userEvent.setup()
 		const handleRest = vi.fn()
 
@@ -95,6 +95,13 @@ describe('TodayCompletion component', () => {
 
 		await user.click(restButton)
 		expect(handleRest).toHaveBeenCalledTimes(1)
+
+		expect(
+			screen.getByText(/resting acknowledged\. enjoy your breathing space\./i),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /resting acknowledged/i }),
+		).toBeDisabled()
 	})
 
 	it('renders "Choose something else" as an optional action', async () => {

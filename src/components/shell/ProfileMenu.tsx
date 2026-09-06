@@ -1,9 +1,14 @@
 'use client'
 
 import React, { useEffect, useRef, useState } from 'react'
+
+import { createDemoState } from '../../data/demoScenario'
+import { clearState } from '../../state/persistence'
+import { useWellwisher } from '../../state/WellwisherProvider'
 import styles from './HeaderNav.module.css'
 
 export function ProfileMenu (): React.JSX.Element {
+	const { dispatch } = useWellwisher()
 	const [isOpen, setIsOpen] = useState(false)
 	const menuRef = useRef<HTMLDivElement>(null)
 
@@ -13,6 +18,12 @@ export function ProfileMenu (): React.JSX.Element {
 
 	const handleClose = () => {
 		setIsOpen(false)
+	}
+
+	const handleResetDemo = () => {
+		clearState()
+		dispatch({ type: 'RESET_STATE', payload: createDemoState() })
+		handleClose()
 	}
 
 	useEffect(() => {
@@ -87,7 +98,7 @@ export function ProfileMenu (): React.JSX.Element {
 						type='button'
 						role='menuitem'
 						className={`${styles.menuItem} ${styles.menuItemSubtle}`}
-						onClick={handleClose}
+						onClick={handleResetDemo}
 					>
 						Reset demo scenario
 					</button>

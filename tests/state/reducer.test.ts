@@ -248,6 +248,26 @@ describe('wellwisherReducer', () => {
 
 		expect(nextState.voicePreferences.muted).toBe(true)
 	})
+
+	test('RESET_STATE resets state to payload or default demo state', () => {
+		const customDemo = createDemoState('2026-09-14')
+		const modifiedState: WellwisherState = {
+			...createDemoState('2026-09-07'),
+			intentions: [],
+		}
+
+		const resetWithPayload = wellwisherReducer(modifiedState, {
+			type: 'RESET_STATE',
+			payload: customDemo,
+		})
+		expect(resetWithPayload.weekStart).toBe('2026-09-14')
+		expect(resetWithPayload.intentions.length).toBeGreaterThan(0)
+
+		const resetWithoutPayload = wellwisherReducer(modifiedState, {
+			type: 'RESET_STATE',
+		})
+		expect(resetWithoutPayload.intentions.length).toBeGreaterThan(0)
+	})
 })
 
 describe('WellwisherProvider and selectors', () => {
