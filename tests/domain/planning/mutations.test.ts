@@ -51,6 +51,21 @@ planWithOpenCapacity.openWindows = planWithOpenCapacity.days.flatMap(
   (day) => calculateCapacity(day).openWindows,
 )
 
+const overnightPlan: WeekPlan = {
+  weekStart: '2026-09-07',
+  protectedCommitments: [],
+  allocations: [suggestedAllocation],
+  openWindows: [],
+  days: [
+    { date: '2026-09-07', protectedCommitments: [], allocations: [suggestedAllocation] },
+    { date: '2026-09-08', protectedCommitments: [], allocations: [] },
+    { date: '2026-09-09', protectedCommitments: [], allocations: [] },
+  ],
+}
+overnightPlan.openWindows = overnightPlan.days.flatMap(
+  (day) => calculateCapacity(day).openWindows,
+)
+
 describe('planning mutations', () => {
   test('moves only a flexible allocation and preserves protected commitments', () => {
     const moved = moveAllocation(plan, suggestedAllocation.id, {
@@ -192,6 +207,57 @@ describe('planning mutations', () => {
   test('rejects invalid pin times', () => {
     expect(() => pinAllocation(planWithOpenCapacity, suggestedAllocation.id, '25:99')).toThrow(
       RangeError,
+    )
+  })
+
+  test('supports a cross-midnight pin across both affected day lists and capacities', () => {
+    const pinned = pinAllocation(overnightPlan, suggestedAllocation.id, '23:30')
+
+    expect(pinned.allocations).toContainEqual({
+      ...suggestedAllocation,
+      mode: 'pinned',
+      start: '23:30',
+      end: '01:00',
+      endDate: '2026-09-08',
+    })
+    expect(pinned.days[0].allocations).toContainEqual(
+      expect.objectContaining({ id: suggestedAllocation.id, date: '2026-09-07' }),
+    )
+    expect(pinned.days[1].allocations).toContainEqual(
+      expect.objectContaining({ id: suggestedAllocation.id, date: '2026-09-07', endDate: '2026-09-08' }),
+    )
+    expect(calculateCapacity(pinned.days[0]).openMinutes).toBe(1410)
+    expect(calculateCapacity(pinned.days[1]).openMinutes).toBe(1380)
+    expect(pinned.openWindows).toContainEqual({
+      date: '2026-09-08',
+      start: '01:00',
+      end: '24:00',
+      durationMinutes: 1380,
+    })
+  })
+
+  test('moves a cross-midnight pinned placement to a new pair of days', () => {
+    const pinned = pinAllocation(overnightPlan, suggestedAllocation.id, '23:30')
+    const moved = moveAllocation(pinned, suggestedAllocation.id, {
+      date: '2026-09-08',
+      start: '23:30',
+    })
+
+    expect(moved.allocations).toContainEqual(
+      expect.objectContaining({
+        id: suggestedAllocation.id,
+        date: '2026-09-08',
+        endDate: '2026-09-09',
+        start: '23:30',
+        end: '01:00',
+      }),
+    )
+    expect(moved.days[0].allocations).toEqual([])
+    expect(moved.days[1].allocations).toContainEqual(
+      expect.objectContaining({ id: suggestedAllocation.id, date: '2026-09-08' }),
+    )
+    expect(moved.days[2].allocations).toContainEqual(
+      expect.objectContaining({ id: suggestedAllocation.id, endDate: '2026-09-09' }),
     )
   })
 })

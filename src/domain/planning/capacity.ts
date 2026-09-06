@@ -88,7 +88,7 @@ function commitmentRangeForDate(commitment: ProtectedCommitment, date: string): 
   return { start: 0, end: MINUTES_PER_DAY }
 }
 
-function allocationRange(allocation: Allocation): Range | null {
+function allocationRangeForDate(allocation: Allocation, date: string): Range | null {
   if (!allocation.start && !allocation.end) {
     return null
   }
@@ -97,7 +97,36 @@ function allocationRange(allocation: Allocation): Range | null {
     throw new RangeError(`Allocation ${allocation.id} must provide both start and end times`)
   }
 
-  return asRange(allocation.start, allocation.end)
+  const startDate = parseISO(allocation.date)
+  if (!isValid(startDate)) {
+    throw new RangeError(`Invalid allocation date: ${allocation.date}`)
+  }
+
+  const startMinutes = parseClockTime(allocation.start)
+  const endMinutes = parseClockTime(allocation.end)
+  const endDate = allocation.endDate ??
+    (endMinutes <= startMinutes ? format(addDays(startDate, 1), 'yyyy-MM-dd') : allocation.date)
+  if (!isValid(parseISO(endDate)) || endDate < allocation.date) {
+    throw new RangeError(`Invalid allocation end date: ${endDate}`)
+  }
+
+  if (date < allocation.date || date > endDate) {
+    return null
+  }
+
+  if (date === allocation.date && date === endDate) {
+    return asRange(allocation.start, allocation.end)
+  }
+
+  if (date === allocation.date) {
+    return { start: startMinutes, end: MINUTES_PER_DAY }
+  }
+
+  if (date === endDate) {
+    return { start: 0, end: endMinutes }
+  }
+
+  return { start: 0, end: MINUTES_PER_DAY }
 }
 
 function openWindowsFor(
@@ -155,13 +184,13 @@ export function calculateCapacity(day: DayPlan): CapacitySummary {
       .map((commitment) => commitmentRangeForDate(commitment, day.date))
       .filter((range): range is Range => range !== null),
     ...day.allocations
-      .filter((allocation) => allocation.date === day.date && allocation.mode === 'protected')
-      .map(allocationRange)
+      .filter((allocation) => allocation.mode === 'protected')
+      .map((allocation) => allocationRangeForDate(allocation, day.date))
       .filter((range): range is Range => range !== null),
   ]
   const pinnedRanges = day.allocations
-    .filter((allocation) => allocation.date === day.date && allocation.mode === 'pinned')
-    .map(allocationRange)
+    .filter((allocation) => allocation.mode === 'pinned')
+    .map((allocation) => allocationRangeForDate(allocation, day.date))
     .filter((range): range is Range => range !== null)
 
   const mergedProtected = mergeRanges(protectedRanges)

@@ -1,3 +1,5 @@
+import { addDays, format, isValid, parseISO } from 'date-fns'
+
 import { calculateCapacity } from './capacity'
 import { formatClockTime, MINUTES_PER_DAY, parseClockTime } from './time'
 import type { Allocation, MoveTarget, WeekPlan } from './types'
@@ -20,16 +22,17 @@ function clonePlan(plan: WeekPlan): WeekPlan {
 }
 
 function setAllocationInDays(days: WeekPlan['days'], allocation: Allocation): WeekPlan['days'] {
+  const coveredDates = allocationDates(allocation)
+
   return days.map((day) => {
     const withoutAllocation = day.allocations.filter((item) => item.id !== allocation.id)
 
     return {
       ...day,
       protectedCommitments: day.protectedCommitments.map((commitment) => ({ ...commitment })),
-      allocations:
-        day.date === allocation.date
-          ? [...withoutAllocation, { ...allocation }]
-          : withoutAllocation,
+      allocations: coveredDates.includes(day.date)
+        ? [...withoutAllocation, { ...allocation }]
+        : withoutAllocation,
     }
   })
 }
@@ -40,6 +43,9 @@ function parseStart(start: string, fallbackDate: string): { date: string; time: 
 
   if (fullMatch) {
     parseClockTime(fullMatch[2])
+    if (!isValid(parseISO(fullMatch[1]))) {
+      throw new RangeError(`Invalid local date: ${fullMatch[1]}`)
+    }
     return { date: fullMatch[1], time: fullMatch[2] }
   }
 
@@ -55,11 +61,52 @@ function parseStart(start: string, fallbackDate: string): { date: string; time: 
 function endForDuration(start: string, durationMinutes: number): string | null {
   const endMinutes = parseClockTime(start) + durationMinutes
 
-  if (endMinutes > MINUTES_PER_DAY) {
+  if (endMinutes > MINUTES_PER_DAY * 2) {
     return null
   }
 
-  return endMinutes === MINUTES_PER_DAY ? '24:00' : formatClockTime(endMinutes)
+  return endMinutes === MINUTES_PER_DAY
+    ? '24:00'
+    : formatClockTime(endMinutes)
+}
+
+function endDateForPlacement(date: string, start: string, end: string): string | undefined {
+  const startMinutes = parseClockTime(start)
+  const endMinutes = parseClockTime(end)
+
+  if (endMinutes < startMinutes) {
+    const nextDate = addDays(parseISO(date), 1)
+    if (!isValid(nextDate)) {
+      throw new RangeError(`Invalid local date: ${date}`)
+    }
+    return format(nextDate, 'yyyy-MM-dd')
+  }
+
+  return undefined
+}
+
+function allocationDates(allocation: Allocation): string[] {
+  const startDate = parseISO(allocation.date)
+  if (!isValid(startDate)) {
+    throw new RangeError(`Invalid allocation date: ${allocation.date}`)
+  }
+
+  const endDate = allocation.endDate ??
+    (allocation.start && allocation.end
+      ? endDateForPlacement(allocation.date, allocation.start, allocation.end)
+      : undefined) ?? allocation.date
+  const finalDate = parseISO(endDate)
+  if (!isValid(finalDate) || endDate < allocation.date) {
+    throw new RangeError(`Invalid allocation end date: ${endDate}`)
+  }
+
+  const dates: string[] = []
+  let date = startDate
+  while (format(date, 'yyyy-MM-dd') <= endDate) {
+    dates.push(format(date, 'yyyy-MM-dd'))
+    date = addDays(date, 1)
+  }
+  return dates
 }
 
 function hasDay(plan: WeekPlan, date: string): boolean {
@@ -70,34 +117,48 @@ function hasAllocationInDays(plan: WeekPlan, allocationId: string): boolean {
   return plan.days.some((day) => day.allocations.some((allocation) => allocation.id === allocationId))
 }
 
-function canPlaceExact(day: WeekPlan['days'][number], allocation: Allocation): boolean {
+function canPlaceExact(plan: WeekPlan, allocation: Allocation): boolean {
   if (!allocation.start || !allocation.end) {
     return false
   }
 
   const start = parseClockTime(allocation.start)
   const end = parseClockTime(allocation.end)
-  const endInDay = end <= start ? end + MINUTES_PER_DAY : end
-  const availableStart = day.availableStart ? parseClockTime(day.availableStart) : 0
-  let availableEnd = day.availableEnd ? parseClockTime(day.availableEnd) : MINUTES_PER_DAY
+  const endInPlacement = end <= start ? end + MINUTES_PER_DAY : end
+  const coveredDates = allocationDates(allocation)
 
-  if (availableEnd <= availableStart) {
-    availableEnd += MINUTES_PER_DAY
-  }
-
-  if (endInDay > MINUTES_PER_DAY || endInDay - start !== allocation.durationMinutes) {
+  if (endInPlacement - start !== allocation.durationMinutes || coveredDates.some((date) => !hasDay(plan, date))) {
     return false
   }
 
-  if (start < availableStart || endInDay > availableEnd) {
-    return false
-  }
+  return coveredDates.every((date) => {
+    const day = plan.days.find((item) => item.date === date)
+    if (!day) {
+      return false
+    }
 
-  const withoutCandidate = day.allocations.filter((item) => item.id !== allocation.id)
-  const before = calculateCapacity({ ...day, allocations: withoutCandidate })
-  const after = calculateCapacity({ ...day, allocations: [...withoutCandidate, allocation] })
+    const segmentStart = date === allocation.date ? start : 0
+    const segmentEnd = date === coveredDates[coveredDates.length - 1] ? end : MINUTES_PER_DAY
+    const availableStart = day.availableStart ? parseClockTime(day.availableStart) : 0
+    let availableEnd = day.availableEnd ? parseClockTime(day.availableEnd) : MINUTES_PER_DAY
 
-  return after.openMinutes === before.openMinutes - allocation.durationMinutes
+    if (availableEnd <= availableStart) {
+      availableEnd += MINUTES_PER_DAY
+    }
+
+    if (segmentStart < availableStart || segmentEnd > availableEnd) {
+      return false
+    }
+
+    const withoutCandidate = day.allocations.filter((item) => item.id !== allocation.id)
+    const before = calculateCapacity({ ...day, allocations: withoutCandidate })
+    const after = calculateCapacity({
+      ...day,
+      allocations: [...withoutCandidate, allocation],
+    })
+
+    return after.openMinutes === before.openMinutes - (segmentEnd - segmentStart)
+  })
 }
 
 function updatePlanAllocation(next: WeekPlan, allocation: Allocation): void {
@@ -144,16 +205,30 @@ export function moveAllocation(plan: WeekPlan, allocationId: string, target: Mov
     moved.mode = 'pinned'
     moved.start = parsedStart.time
     moved.end = end
+    const endDate = endDateForPlacement(target.date, moved.start, moved.end)
+    if (endDate) {
+      moved.endDate = endDate
+    } else {
+      delete moved.endDate
+    }
   } else if (current.mode === 'suggested') {
     delete moved.start
     delete moved.end
+    delete moved.endDate
+  } else if (current.start && current.end) {
+    const endDate = endDateForPlacement(target.date, current.start, current.end)
+    if (endDate) {
+      moved.endDate = endDate
+    } else {
+      delete moved.endDate
+    }
   }
 
   if (target.window) {
     moved.window = target.window
   }
 
-  if (moved.mode === 'pinned' && !canPlaceExact(next.days.find((day) => day.date === target.date)!, moved)) {
+  if (moved.mode === 'pinned' && !canPlaceExact(next, moved)) {
     return next
   }
 
@@ -187,9 +262,12 @@ export function pinAllocation(plan: WeekPlan, allocationId: string, start: strin
     start: parsedStart.time,
     end,
   }
+  const endDate = endDateForPlacement(parsedStart.date, parsedStart.time, end)
+  if (endDate) {
+    pinned.endDate = endDate
+  }
 
-  const targetDay = next.days.find((day) => day.date === parsedStart.date)
-  if (!targetDay || !canPlaceExact(targetDay, pinned)) {
+  if (!canPlaceExact(next, pinned)) {
     return next
   }
 

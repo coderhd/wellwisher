@@ -42,6 +42,7 @@ export interface Allocation {
   intentionId?: string
   commitmentId?: string
   date: string
+  endDate?: string
   mode: AllocationMode
   /** An advisory broad placement; start/end are reserved for exact pinned times. */
   window?: 'morning' | 'afternoon' | 'evening'
