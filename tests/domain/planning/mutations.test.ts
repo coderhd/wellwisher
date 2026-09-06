@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { moveAllocation, pinAllocation } from '../../../src/domain/planning/mutations'
+import { calculateCapacity } from '../../../src/domain/planning/capacity'
 import type { Allocation, ProtectedCommitment, WeekPlan } from '../../../src/domain/planning/types'
 
 const protectedCommitment: ProtectedCommitment = {
@@ -41,6 +42,15 @@ const plan: WeekPlan = {
   ],
 }
 
+const planWithOpenCapacity: WeekPlan = {
+  ...plan,
+  days: plan.days.map((day) => ({ ...day, availableStart: '08:00', availableEnd: '18:00' })),
+  openWindows: [],
+}
+planWithOpenCapacity.openWindows = planWithOpenCapacity.days.flatMap(
+  (day) => calculateCapacity(day).openWindows,
+)
+
 describe('planning mutations', () => {
   test('moves only a flexible allocation and preserves protected commitments', () => {
     const moved = moveAllocation(plan, suggestedAllocation.id, {
@@ -52,6 +62,7 @@ describe('planning mutations', () => {
     expect(moved.allocations).toContainEqual({
       ...suggestedAllocation,
       date: '2026-09-08',
+      window: 'morning',
     })
     expect(moved.protectedCommitments).toEqual(plan.protectedCommitments)
     expect(moved.days[0].protectedCommitments).toEqual(plan.days[0].protectedCommitments)
@@ -80,10 +91,6 @@ describe('planning mutations', () => {
   })
 
   test('pins a suggested placement with an exact local end time', () => {
-    const planWithOpenCapacity = {
-      ...plan,
-      days: plan.days.map((day) => ({ ...day, availableStart: '08:00', availableEnd: '18:00' })),
-    }
     const pinned = pinAllocation(planWithOpenCapacity, suggestedAllocation.id, '09:30')
 
     expect(pinned.allocations).toContainEqual({
@@ -102,14 +109,14 @@ describe('planning mutations', () => {
   })
 
   test('accepts an ISO local start and moves the allocation to that date', () => {
-    const pinned = pinAllocation(plan, suggestedAllocation.id, '2026-09-08T23:30')
+    const pinned = pinAllocation(plan, suggestedAllocation.id, '2026-09-08T09:30')
 
     expect(pinned.allocations).toContainEqual({
       ...suggestedAllocation,
       date: '2026-09-08',
       mode: 'pinned',
-      start: '23:30',
-      end: '01:00',
+      start: '09:30',
+      end: '11:00',
     })
   })
 
@@ -135,5 +142,56 @@ describe('planning mutations', () => {
       start: '09:30',
       end: '11:00',
     })
+  })
+
+  test('rejects a move outside the plan week without orphaning the allocation', () => {
+    const moved = moveAllocation(plan, suggestedAllocation.id, { date: '2026-09-20' })
+
+    expect(moved.allocations).toEqual(plan.allocations)
+    expect(moved.days).toEqual(plan.days)
+  })
+
+  test('honors a target window and exact start/end when moving a flexible allocation', () => {
+    const moved = moveAllocation(planWithOpenCapacity, suggestedAllocation.id, {
+      date: '2026-09-08',
+      window: 'afternoon',
+      start: '14:00',
+      end: '15:30',
+    })
+
+    expect(moved.allocations).toContainEqual({
+      ...suggestedAllocation,
+      date: '2026-09-08',
+      mode: 'pinned',
+      window: 'afternoon',
+      start: '14:00',
+      end: '15:30',
+    })
+    expect(moved.days[1].allocations).toContainEqual(
+      expect.objectContaining({ id: suggestedAllocation.id, date: '2026-09-08' }),
+    )
+  })
+
+  test('rejects a pin outside the plan week without orphaning the allocation', () => {
+    const pinned = pinAllocation(planWithOpenCapacity, suggestedAllocation.id, '2026-09-20T09:00')
+
+    expect(pinned.allocations).toEqual(planWithOpenCapacity.allocations)
+    expect(pinned.days).toEqual(planWithOpenCapacity.days)
+  })
+
+  test.each([
+    ['overlaps protected time', '13:00'],
+    ['falls outside available hours', '17:00'],
+  ])('rejects a pin that %s', (_reason, start) => {
+    const pinned = pinAllocation(planWithOpenCapacity, suggestedAllocation.id, start)
+
+    expect(pinned.allocations).toEqual(planWithOpenCapacity.allocations)
+    expect(pinned.openWindows).toEqual(planWithOpenCapacity.openWindows)
+  })
+
+  test('rejects invalid pin times', () => {
+    expect(() => pinAllocation(planWithOpenCapacity, suggestedAllocation.id, '25:99')).toThrow(
+      RangeError,
+    )
   })
 })

@@ -1,3 +1,6 @@
+import { addDays, format, isValid, parseISO } from 'date-fns'
+
+import { formatClockTime, MINUTES_PER_DAY, parseClockTime } from './time'
 import type {
   Allocation,
   CapacitySummary,
@@ -6,22 +9,13 @@ import type {
   ProtectedCommitment,
 } from './types'
 
-const MINUTES_PER_DAY = 24 * 60
-
 interface Range {
   start: number
   end: number
 }
 
 function toMinutes(time: string): number {
-  const localTime = time.includes('T') ? time.slice(11, 16) : time.slice(-5)
-  const match = /^(\d{2}):(\d{2})$/.exec(localTime)
-
-  if (!match) {
-    throw new RangeError(`Invalid local time: ${time}`)
-  }
-
-  return Number(match[1]) * 60 + Number(match[2])
+  return parseClockTime(time.includes('T') ? time.slice(11, 16) : time)
 }
 
 function asRange(start: string, end: string): Range {
@@ -58,19 +52,49 @@ function mergeRanges(ranges: Range[]): Range[] {
 }
 
 function formatTime(minutes: number): string {
-  const normalized = Math.max(0, Math.min(MINUTES_PER_DAY, minutes))
-  const hours = Math.floor(normalized / 60)
-  const remainder = normalized % 60
-  return `${String(hours).padStart(2, '0')}:${String(remainder).padStart(2, '0')}`
+  return minutes === MINUTES_PER_DAY ? '24:00' : formatClockTime(minutes)
 }
 
-function commitmentRange(commitment: ProtectedCommitment): Range {
-  return asRange(commitment.startTime, commitment.endTime)
+function commitmentRangeForDate(commitment: ProtectedCommitment, date: string): Range | null {
+  const startDate = parseISO(commitment.date)
+  if (!isValid(startDate)) {
+    throw new RangeError(`Invalid commitment date: ${commitment.date}`)
+  }
+
+  const startMinutes = parseClockTime(commitment.startTime)
+  const endMinutes = parseClockTime(commitment.endTime)
+  const endDate = commitment.endDate ??
+    (endMinutes <= startMinutes ? format(addDays(startDate, 1), 'yyyy-MM-dd') : commitment.date)
+  if (!isValid(parseISO(endDate)) || endDate < commitment.date) {
+    throw new RangeError(`Invalid commitment end date: ${endDate}`)
+  }
+
+  if (date < commitment.date || date > endDate) {
+    return null
+  }
+
+  if (date === commitment.date && date === endDate) {
+    return asRange(commitment.startTime, commitment.endTime)
+  }
+
+  if (date === commitment.date) {
+    return { start: startMinutes, end: MINUTES_PER_DAY }
+  }
+
+  if (date === endDate) {
+    return { start: 0, end: endMinutes }
+  }
+
+  return { start: 0, end: MINUTES_PER_DAY }
 }
 
 function allocationRange(allocation: Allocation): Range | null {
-  if (!allocation.start || !allocation.end) {
+  if (!allocation.start && !allocation.end) {
     return null
+  }
+
+  if (!allocation.start || !allocation.end) {
+    throw new RangeError(`Allocation ${allocation.id} must provide both start and end times`)
   }
 
   return asRange(allocation.start, allocation.end)
@@ -127,8 +151,9 @@ export function calculateCapacity(day: DayPlan): CapacitySummary {
 
   const protectedRanges = [
     ...day.protectedCommitments
-      .filter((commitment) => commitment.date === day.date)
-      .map(commitmentRange),
+      .filter((commitment) => commitment.protected)
+      .map((commitment) => commitmentRangeForDate(commitment, day.date))
+      .filter((range): range is Range => range !== null),
     ...day.allocations
       .filter((allocation) => allocation.date === day.date && allocation.mode === 'protected')
       .map(allocationRange)

@@ -81,9 +81,23 @@ describe('expandRecurrence', () => {
     expect(commitments[0]).toMatchObject({
       anchorId: 'night-shift',
       date: '2026-09-07',
+      endDate: '2026-09-08',
       startTime: '23:00',
       endTime: '01:00',
       durationMinutes: 120,
     })
+  })
+
+  test('rejects invalid local times instead of normalizing them', () => {
+    const anchor: RhythmAnchor = {
+      id: 'invalid-time',
+      title: 'Invalid time',
+      startTime: '25:99',
+      endTime: '26:00',
+      repeat: { type: 'daily' },
+      protected: true,
+    }
+
+    expect(() => expandRecurrence(anchor, '2026-09-07')).toThrow(RangeError)
   })
 })

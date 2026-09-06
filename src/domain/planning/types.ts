@@ -30,6 +30,7 @@ export interface ProtectedCommitment {
   anchorId: string
   title: string
   date: string
+  endDate?: string
   startTime: string
   endTime: string
   durationMinutes: number
@@ -42,6 +43,8 @@ export interface Allocation {
   commitmentId?: string
   date: string
   mode: AllocationMode
+  /** An advisory broad placement; start/end are reserved for exact pinned times. */
+  window?: 'morning' | 'afternoon' | 'evening'
   start?: string
   end?: string
   durationMinutes: number
@@ -85,6 +88,10 @@ export interface ArrangeWeekInput {
   preserveOpenMinutesPerDay: number
 }
 
+/**
+ * A window-only move remains suggested. Supplying start promotes the move to a
+ * pinned exact placement; end is optional and otherwise derived from duration.
+ */
 export interface MoveTarget {
   date: string
   window?: 'morning' | 'afternoon' | 'evening'

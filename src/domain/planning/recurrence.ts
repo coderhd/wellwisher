@@ -1,33 +1,7 @@
-import { addDays, format, getDay, parseISO } from 'date-fns'
+import { addDays, format, getDay, isValid, parseISO } from 'date-fns'
 
+import { durationBetween, parseClockTime } from './time'
 import type { ProtectedCommitment, RhythmAnchor } from './types'
-
-const MINUTES_PER_DAY = 24 * 60
-
-function toMinutes(time: string): number {
-  const match = /^(\d{2}):(\d{2})$/.exec(time)
-
-  if (!match) {
-    throw new RangeError(`Invalid local time: ${time}`)
-  }
-
-  const hours = Number(match[1])
-  const minutes = Number(match[2])
-
-  if (hours > 24 || minutes > 59 || (hours === 24 && minutes !== 0)) {
-    throw new RangeError(`Invalid local time: ${time}`)
-  }
-
-  return hours * 60 + minutes
-}
-
-function durationBetween(startTime: string, endTime: string): number {
-  const start = toMinutes(startTime)
-  const end = toMinutes(endTime)
-  const duration = end - start
-
-  return duration > 0 ? duration : duration + MINUTES_PER_DAY
-}
 
 function shouldRepeatOn(anchor: RhythmAnchor, date: Date): boolean {
   const weekday = getDay(date)
@@ -44,6 +18,12 @@ function shouldRepeatOn(anchor: RhythmAnchor, date: Date): boolean {
 
 export function expandRecurrence(anchor: RhythmAnchor, weekStart: string): ProtectedCommitment[] {
   const firstDate = parseISO(weekStart)
+  if (!isValid(firstDate)) {
+    throw new RangeError(`Invalid week start: ${weekStart}`)
+  }
+
+  const startMinutes = parseClockTime(anchor.startTime)
+  const endMinutes = parseClockTime(anchor.endTime)
   const durationMinutes = durationBetween(anchor.startTime, anchor.endTime)
   const commitments: ProtectedCommitment[] = []
 
@@ -55,7 +35,7 @@ export function expandRecurrence(anchor: RhythmAnchor, weekStart: string): Prote
     }
 
     const dateString = format(date, 'yyyy-MM-dd')
-    commitments.push({
+    const commitment: ProtectedCommitment = {
       id: `${anchor.id}:${dateString}`,
       anchorId: anchor.id,
       title: anchor.title,
@@ -64,7 +44,13 @@ export function expandRecurrence(anchor: RhythmAnchor, weekStart: string): Prote
       endTime: anchor.endTime,
       durationMinutes,
       protected: anchor.protected,
-    })
+    }
+
+    if (endMinutes <= startMinutes) {
+      commitment.endDate = format(addDays(date, 1), 'yyyy-MM-dd')
+    }
+
+    commitments.push(commitment)
   }
 
   return commitments

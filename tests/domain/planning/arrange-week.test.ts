@@ -1,6 +1,7 @@
 import { describe, expect, test } from 'vitest'
 
 import { arrangeWeek } from '../../../src/domain/planning/arrange-week'
+import { calculateCapacity } from '../../../src/domain/planning/capacity'
 import type { FlexibleIntention, RhythmAnchor } from '../../../src/domain/planning/types'
 
 const anchor = (
@@ -95,5 +96,32 @@ describe('arrangeWeek', () => {
 
     expect(anchors).toEqual(originalAnchors)
     expect(inputIntentions).toEqual(originalIntentions)
+  })
+
+  test('carries an overnight protected anchor into the next day capacity', () => {
+    const overnightAnchor: RhythmAnchor = {
+      id: 'night-shift',
+      title: 'Night shift',
+      startTime: '23:00',
+      endTime: '01:00',
+      repeat: { type: 'daily' },
+      protected: true,
+    }
+
+    const plan = arrangeWeek({
+      anchors: [overnightAnchor],
+      intentions: [],
+      weekStart: '2026-09-07',
+      preserveOpenMinutesPerDay: 90,
+    })
+
+    expect(plan.days[1].protectedCommitments).toContainEqual(
+      expect.objectContaining({
+        date: '2026-09-07',
+        endDate: '2026-09-08',
+      }),
+    )
+    expect(calculateCapacity({ ...plan.days[1], availableStart: '00:00', availableEnd: '08:00' }))
+      .toMatchObject({ protectedMinutes: 60, openMinutes: 420 })
   })
 })

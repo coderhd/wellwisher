@@ -1,7 +1,6 @@
-import type { Allocation, MoveTarget, WeekPlan } from './types'
 import { calculateCapacity } from './capacity'
-
-const MINUTES_PER_DAY = 24 * 60
+import { formatClockTime, MINUTES_PER_DAY, parseClockTime } from './time'
+import type { Allocation, MoveTarget, WeekPlan } from './types'
 
 function clonePlan(plan: WeekPlan): WeekPlan {
   return {
@@ -35,43 +34,89 @@ function setAllocationInDays(days: WeekPlan['days'], allocation: Allocation): We
   })
 }
 
-function parseStart(start: string, fallbackDate: string): { date: string; time: string } | null {
+function parseStart(start: string, fallbackDate: string): { date: string; time: string } {
   const fullMatch = /^(\d{4}-\d{2}-\d{2})[T ](\d{2}:\d{2})(?::\d{2})?$/.exec(start)
   const timeMatch = /^(\d{2}):(\d{2})$/.exec(start)
 
   if (fullMatch) {
+    parseClockTime(fullMatch[2])
     return { date: fullMatch[1], time: fullMatch[2] }
   }
 
   if (timeMatch) {
-    return { date: fallbackDate, time: `${timeMatch[1]}:${timeMatch[2]}` }
+    const time = `${timeMatch[1]}:${timeMatch[2]}`
+    parseClockTime(time)
+    return { date: fallbackDate, time }
   }
 
-  return null
+  throw new RangeError(`Invalid local start: ${start}`)
 }
 
-function toMinutes(time: string): number {
-  return Number(time.slice(0, 2)) * 60 + Number(time.slice(3, 5))
+function endForDuration(start: string, durationMinutes: number): string | null {
+  const endMinutes = parseClockTime(start) + durationMinutes
+
+  if (endMinutes > MINUTES_PER_DAY) {
+    return null
+  }
+
+  return endMinutes === MINUTES_PER_DAY ? '24:00' : formatClockTime(endMinutes)
 }
 
-function formatTime(minutes: number): string {
-  const normalized = ((minutes % MINUTES_PER_DAY) + MINUTES_PER_DAY) % MINUTES_PER_DAY
-  return `${String(Math.floor(normalized / 60)).padStart(2, '0')}:${String(normalized % 60).padStart(2, '0')}`
+function hasDay(plan: WeekPlan, date: string): boolean {
+  return plan.days.some((day) => day.date === date)
+}
+
+function hasAllocationInDays(plan: WeekPlan, allocationId: string): boolean {
+  return plan.days.some((day) => day.allocations.some((allocation) => allocation.id === allocationId))
+}
+
+function canPlaceExact(day: WeekPlan['days'][number], allocation: Allocation): boolean {
+  if (!allocation.start || !allocation.end) {
+    return false
+  }
+
+  const start = parseClockTime(allocation.start)
+  const end = parseClockTime(allocation.end)
+  const endInDay = end <= start ? end + MINUTES_PER_DAY : end
+  const availableStart = day.availableStart ? parseClockTime(day.availableStart) : 0
+  let availableEnd = day.availableEnd ? parseClockTime(day.availableEnd) : MINUTES_PER_DAY
+
+  if (availableEnd <= availableStart) {
+    availableEnd += MINUTES_PER_DAY
+  }
+
+  if (endInDay > MINUTES_PER_DAY || endInDay - start !== allocation.durationMinutes) {
+    return false
+  }
+
+  if (start < availableStart || endInDay > availableEnd) {
+    return false
+  }
+
+  const withoutCandidate = day.allocations.filter((item) => item.id !== allocation.id)
+  const before = calculateCapacity({ ...day, allocations: withoutCandidate })
+  const after = calculateCapacity({ ...day, allocations: [...withoutCandidate, allocation] })
+
+  return after.openMinutes === before.openMinutes - allocation.durationMinutes
+}
+
+function updatePlanAllocation(next: WeekPlan, allocation: Allocation): void {
+  next.allocations = next.allocations.map((item) =>
+    item.id === allocation.id ? { ...allocation } : item,
+  )
+  next.days = setAllocationInDays(next.days, allocation)
+  next.openWindows = next.days.flatMap((day) => calculateCapacity(day).openWindows)
 }
 
 function isProtected(allocation: Allocation): boolean {
   return allocation.mode === 'protected' || allocation.commitmentId !== undefined
 }
 
-function refreshOpenWindows(plan: WeekPlan): void {
-  plan.openWindows = plan.days.flatMap((day) => calculateCapacity(day).openWindows)
-}
-
 export function moveAllocation(plan: WeekPlan, allocationId: string, target: MoveTarget): WeekPlan {
   const next = clonePlan(plan)
   const current = next.allocations.find((allocation) => allocation.id === allocationId)
 
-  if (!current || isProtected(current)) {
+  if (!current || isProtected(current) || !hasDay(next, target.date) || !hasAllocationInDays(next, allocationId)) {
     return next
   }
 
@@ -80,16 +125,39 @@ export function moveAllocation(plan: WeekPlan, allocationId: string, target: Mov
     date: target.date,
   }
 
-  if (current.mode === 'suggested') {
+  if (target.end && !target.start) {
+    throw new RangeError('MoveTarget.end requires MoveTarget.start')
+  }
+
+  if (target.start) {
+    const parsedStart = parseStart(target.start, target.date)
+    if (parsedStart.date !== target.date) {
+      return next
+    }
+
+    const end = target.end ?? endForDuration(parsedStart.time, current.durationMinutes)
+    if (!end) {
+      return next
+    }
+
+    parseClockTime(end)
+    moved.mode = 'pinned'
+    moved.start = parsedStart.time
+    moved.end = end
+  } else if (current.mode === 'suggested') {
     delete moved.start
     delete moved.end
   }
 
-  next.allocations = next.allocations.map((allocation) =>
-    allocation.id === allocationId ? moved : allocation,
-  )
-  next.days = setAllocationInDays(next.days, moved)
-  refreshOpenWindows(next)
+  if (target.window) {
+    moved.window = target.window
+  }
+
+  if (moved.mode === 'pinned' && !canPlaceExact(next.days.find((day) => day.date === target.date)!, moved)) {
+    return next
+  }
+
+  updatePlanAllocation(next, moved)
 
   return next
 }
@@ -103,11 +171,15 @@ export function pinAllocation(plan: WeekPlan, allocationId: string, start: strin
   }
 
   const parsedStart = parseStart(start, current.date)
-  if (!parsedStart) {
+  if (!hasDay(next, parsedStart.date) || !hasAllocationInDays(next, allocationId)) {
     return next
   }
 
-  const end = formatTime(toMinutes(parsedStart.time) + current.durationMinutes)
+  const end = endForDuration(parsedStart.time, current.durationMinutes)
+  if (!end) {
+    return next
+  }
+
   const pinned: Allocation = {
     ...current,
     date: parsedStart.date,
@@ -116,11 +188,12 @@ export function pinAllocation(plan: WeekPlan, allocationId: string, start: strin
     end,
   }
 
-  next.allocations = next.allocations.map((allocation) =>
-    allocation.id === allocationId ? pinned : allocation,
-  )
-  next.days = setAllocationInDays(next.days, pinned)
-  refreshOpenWindows(next)
+  const targetDay = next.days.find((day) => day.date === parsedStart.date)
+  if (!targetDay || !canPlaceExact(targetDay, pinned)) {
+    return next
+  }
+
+  updatePlanAllocation(next, pinned)
 
   return next
 }

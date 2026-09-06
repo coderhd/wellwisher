@@ -86,7 +86,9 @@ export function arrangeWeek(input: ArrangeWeekInput): WeekPlan {
   )
   const days: DayPlan[] = dateRange(input.weekStart).map((date) => ({
     date,
-    protectedCommitments: protectedCommitments.filter((commitment) => commitment.date === date),
+    protectedCommitments: protectedCommitments.filter(
+      (commitment) => commitment.date === date || commitment.endDate === date,
+    ),
     allocations: [],
   }))
   const allocations: Allocation[] = []

@@ -14,6 +14,18 @@ const commitment = (startTime: string, endTime: string): ProtectedCommitment => 
   protected: true,
 })
 
+const overnightCommitment: ProtectedCommitment = {
+  id: 'night-shift:2026-09-07',
+  anchorId: 'night-shift',
+  title: 'Night shift',
+  date: '2026-09-07',
+  endDate: '2026-09-08',
+  startTime: '23:00',
+  endTime: '01:00',
+  durationMinutes: 120,
+  protected: true,
+}
+
 const allocation = (overrides: Partial<Allocation>): Allocation => ({
   id: 'allocation',
   intentionId: 'intention',
@@ -78,5 +90,45 @@ describe('calculateCapacity', () => {
       end: '14:00',
       durationMinutes: 360,
     })
+  })
+
+  test('reserves the after-midnight portion of an overnight commitment on the next day', () => {
+    const summary = calculateCapacity({
+      date: '2026-09-08',
+      availableStart: '00:00',
+      availableEnd: '08:00',
+      protectedCommitments: [overnightCommitment],
+      allocations: [],
+    })
+
+    expect(summary.protectedMinutes).toBe(60)
+    expect(summary.openMinutes).toBe(420)
+    expect(summary.openWindows).toEqual([
+      { date: '2026-09-08', start: '01:00', end: '08:00', durationMinutes: 420 },
+    ])
+  })
+
+  test('does not subtract a repeating anchor that is not protected', () => {
+    const summary = calculateCapacity(
+      baseDay({
+        protectedCommitments: [{ ...commitment('10:00', '11:00'), protected: false }],
+      }),
+    )
+
+    expect(summary.protectedMinutes).toBe(0)
+    expect(summary.openMinutes).toBe(600)
+    expect(summary.openWindows).toEqual([
+      { date: '2026-09-07', start: '08:00', end: '18:00', durationMinutes: 600 },
+    ])
+  })
+
+  test('rejects invalid times in day capacity inputs', () => {
+    expect(() =>
+      calculateCapacity(
+        baseDay({
+          availableStart: '25:99',
+        }),
+      ),
+    ).toThrow(RangeError)
   })
 })
