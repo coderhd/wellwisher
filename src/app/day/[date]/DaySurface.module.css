@@ -1,0 +1,85 @@
+.surface {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-6);
+	width: 100%;
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+.navRow {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-4);
+}
+
+.backLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+	font-size: 0.875rem;
+	font-weight: 500;
+	color: var(--ww-sage);
+	text-decoration: none;
+	transition: color 0.15s ease;
+}
+
+.backLink:hover {
+	color: var(--ww-sage-surface);
+	text-decoration: underline;
+}
+
+.backLink:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+	border-radius: var(--ww-radius-sm);
+}
+
+.header {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.kicker {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--ww-sage);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin: 0;
+}
+
+.title {
+	font-family: var(--ww-font-serif);
+	font-size: clamp(2rem, 5vw, 3rem);
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+.subtitle {
+	font-size: 0.9375rem;
+	color: var(--ww-muted);
+	margin: 0;
+}
+
+/* Schedule & Capacity 2-column layout */
+.contentGrid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--ww-space-6);
+}
+
+@media (min-width: 768px) {
+	.contentGrid {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.legendFooter {
+	display: flex;
+	justify-content: center;
+	margin-top: var(--ww-space-2);
+}

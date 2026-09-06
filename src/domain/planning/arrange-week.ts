@@ -70,12 +70,21 @@ function chooseDay(
       }
     })
     .filter((candidate) => candidate.remaining >= intention.durationMinutes)
-    .sort(
-      (left, right) =>
+    .sort((left, right) => {
+      const leftFit = left.preferredOpenMinutes >= intention.durationMinutes
+      const rightFit = right.preferredOpenMinutes >= intention.durationMinutes
+
+      if (leftFit && rightFit) {
+        return left.index - right.index
+      }
+      if (leftFit !== rightFit) {
+        return leftFit ? -1 : 1
+      }
+      return (
         right.preferredOpenMinutes - left.preferredOpenMinutes ||
-        right.remaining - left.remaining ||
-        left.index - right.index,
-    )
+        left.index - right.index
+      )
+    })
 
   return candidates[0]?.day
 }

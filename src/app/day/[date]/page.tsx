@@ -1,5 +1,7 @@
 import React from 'react'
+
 import { AppShell } from '../../../components/shell/AppShell'
+import { DaySurface } from './DaySurface'
 
 export interface DayPageProps {
 	params: Promise<{
@@ -14,13 +16,7 @@ export default async function DayPage ({
 
 	return (
 		<AppShell activeSurface='today'>
-			<section
-				data-testid='day-surface'
-				aria-label={`Day detail for ${date}`}
-			>
-				<h1>Day: {date}</h1>
-				<p>Anchored commitments and flexible blocks</p>
-			</section>
+			<DaySurface date={date} />
 		</AppShell>
 	)
 }

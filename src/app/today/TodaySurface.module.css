@@ -1,0 +1,224 @@
+.surface {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-6);
+	width: 100%;
+	max-width: 960px;
+	margin: 0 auto;
+}
+
+.header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--ww-space-4);
+	flex-wrap: wrap;
+}
+
+.headerLeft {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.kicker {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--ww-sage);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin: 0;
+}
+
+.title {
+	font-family: var(--ww-font-serif);
+	font-size: clamp(2rem, 5vw, 3rem);
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+.companionVoice {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+}
+
+.voiceButton {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+	padding: var(--ww-space-2) var(--ww-space-3);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.2);
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-muted);
+	font-size: 0.75rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.voiceButton:hover {
+	border-color: var(--ww-sage);
+	color: var(--ww-text);
+}
+
+.voiceButton:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
+.voiceIndicator {
+	width: 6px;
+	height: 6px;
+	border-radius: var(--ww-radius-pill);
+	background-color: var(--ww-sage);
+}
+
+.voiceIndicatorMuted {
+	background-color: var(--ww-muted);
+	opacity: 0.5;
+}
+
+/* Companion Perspective Card */
+.perspectiveCard {
+	padding: var(--ww-space-4) var(--ww-space-6);
+	background-color: rgba(44, 57, 61, 0.4);
+	border-left: 3px solid var(--ww-sage);
+	border-radius: 0 var(--ww-radius-md) var(--ww-radius-md) 0;
+}
+
+.perspectiveText {
+	font-family: var(--ww-font-serif);
+	font-size: 1.125rem;
+	font-style: italic;
+	line-height: 1.5;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+/* Recommendation Hero Card */
+.recommendationCard {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-4);
+	padding: var(--ww-space-6);
+	background: linear-gradient(145deg, var(--ww-panel) 0%, rgba(32, 42, 46, 0.95) 100%);
+	border: 1px solid rgba(159, 185, 170, 0.3);
+	border-radius: var(--ww-radius-lg);
+	box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+	position: relative;
+	overflow: hidden;
+}
+
+.recommendationHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: var(--ww-space-2);
+}
+
+.recKicker {
+	font-size: 0.75rem;
+	font-weight: 700;
+	color: var(--ww-peach);
+	text-transform: uppercase;
+	letter-spacing: 0.1em;
+}
+
+.badgesGroup {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+}
+
+.badgePill {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px var(--ww-space-2);
+	border-radius: var(--ww-radius-pill);
+	background-color: rgba(159, 185, 170, 0.15);
+	color: var(--ww-sage-surface);
+	font-size: 0.75rem;
+	font-weight: 600;
+}
+
+.recommendationTitle {
+	font-family: var(--ww-font-serif);
+	font-size: clamp(1.75rem, 4vw, 2.5rem);
+	font-weight: 400;
+	line-height: 1.2;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+.recommendationReason {
+	font-size: 1rem;
+	line-height: 1.6;
+	color: var(--ww-muted);
+	margin: 0;
+	max-width: 48rem;
+}
+
+.actionsRow {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-4);
+	margin-top: var(--ww-space-2);
+}
+
+.focusButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--ww-space-2);
+	padding: var(--ww-space-3) var(--ww-space-6);
+	background-color: var(--ww-peach);
+	border: none;
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-cockpit);
+	font-family: var(--ww-font-sans);
+	font-size: 0.9375rem;
+	font-weight: 700;
+	cursor: pointer;
+	box-shadow: 0 2px 8px rgba(223, 161, 141, 0.3);
+	transition: all 0.15s ease;
+}
+
+.focusButton:hover {
+	transform: translateY(-1px);
+	box-shadow: 0 4px 14px rgba(223, 161, 141, 0.45);
+	background-color: #e5ad9b;
+}
+
+.focusButton:focus-visible {
+	outline: 3px solid var(--ww-sage-surface);
+	outline-offset: 3px;
+}
+
+.focusActiveButton {
+	background-color: var(--ww-sage);
+	color: var(--ww-cockpit);
+}
+
+/* Schedule and Context layout */
+.scheduleSection {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--ww-space-6);
+}
+
+@media (min-width: 768px) {
+	.scheduleSection {
+		grid-template-columns: 1fr 1fr;
+	}
+}
+
+.legendFooter {
+	display: flex;
+	justify-content: center;
+	margin-top: var(--ww-space-2);
+}

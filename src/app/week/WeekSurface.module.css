@@ -1,0 +1,228 @@
+.surface {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-6);
+	width: 100%;
+	max-width: 1440px;
+	margin: 0 auto;
+}
+
+.header {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--ww-space-4);
+	flex-wrap: wrap;
+}
+
+.headerLeft {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.kicker {
+	font-size: 0.8125rem;
+	font-weight: 600;
+	color: var(--ww-sage);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	margin: 0;
+}
+
+.title {
+	font-family: var(--ww-font-serif);
+	font-size: clamp(2rem, 5vw, 3rem);
+	font-weight: 400;
+	line-height: 1.1;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+/* Week summary metrics banner */
+.summaryBanner {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	gap: var(--ww-space-4);
+	padding: var(--ww-space-4);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.16);
+	border-radius: var(--ww-radius-md);
+}
+
+.summaryCard {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.summaryLabel {
+	font-size: 0.8125rem;
+	color: var(--ww-muted);
+	font-weight: 500;
+}
+
+.summaryValue {
+	font-size: 1.5rem;
+	font-weight: 700;
+	font-variant-numeric: tabular-nums;
+}
+
+.protectedValue {
+	color: var(--ww-peach);
+}
+
+.suggestedValue {
+	color: var(--ww-sage);
+}
+
+.openValue {
+	color: var(--ww-stone);
+}
+
+/* 7-column allocation board */
+.columnsContainer {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: var(--ww-space-4);
+	width: 100%;
+}
+
+@media (min-width: 640px) {
+	.columnsContainer {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (min-width: 1024px) {
+	.columnsContainer {
+		grid-template-columns: repeat(7, 1fr);
+		gap: var(--ww-space-3);
+	}
+}
+
+.dayColumn {
+	display: flex;
+	flex-direction: column;
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.14);
+	border-radius: var(--ww-radius-md);
+	overflow: hidden;
+	min-width: 0;
+	transition: border-color 0.15s ease;
+}
+
+.dayColumn:hover {
+	border-color: rgba(159, 185, 170, 0.3);
+}
+
+.columnHeader {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+	padding: var(--ww-space-3);
+	background-color: rgba(32, 42, 46, 0.7);
+	border-bottom: 1px solid rgba(159, 185, 170, 0.12);
+	text-decoration: none;
+	color: var(--ww-text);
+	transition: background-color 0.15s ease;
+}
+
+.columnHeader:hover {
+	background-color: rgba(159, 185, 170, 0.12);
+}
+
+.columnHeader:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: -2px;
+}
+
+.dayHeaderTop {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.dayTitle {
+	font-size: 0.875rem;
+	font-weight: 700;
+	color: var(--ww-text);
+	margin: 0;
+}
+
+.dayDateLabel {
+	font-size: 0.75rem;
+	color: var(--ww-muted);
+}
+
+.dayCapacityPill {
+	font-size: 0.6875rem;
+	font-weight: 600;
+	color: var(--ww-sage-surface);
+	background-color: rgba(159, 185, 170, 0.15);
+	padding: 2px 6px;
+	border-radius: var(--ww-radius-pill);
+	align-self: flex-start;
+}
+
+.columnBody {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-2);
+	padding: var(--ww-space-3);
+	flex: 1;
+}
+
+/* Allocation block cards */
+.blockCard {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: var(--ww-space-2) var(--ww-space-3);
+	border-radius: var(--ww-radius-sm);
+	font-size: 0.8125rem;
+}
+
+.blockProtected {
+	background-color: rgba(223, 161, 141, 0.15);
+	border-left: 3px solid var(--ww-peach);
+	color: var(--ww-text);
+}
+
+.blockSuggested {
+	background-color: rgba(159, 185, 170, 0.15);
+	border-left: 3px solid var(--ww-sage);
+	color: var(--ww-text);
+}
+
+.blockOpen {
+	background-color: rgba(44, 57, 61, 0.3);
+	border: 1px dashed rgba(184, 193, 191, 0.2);
+	color: var(--ww-muted);
+	padding: var(--ww-space-2);
+	text-align: center;
+	font-size: 0.75rem;
+	margin-top: auto;
+}
+
+.blockTitle {
+	font-weight: 600;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.blockMeta {
+	font-size: 0.6875rem;
+	color: var(--ww-muted);
+	font-variant-numeric: tabular-nums;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.legendFooter {
+	display: flex;
+	justify-content: center;
+	margin-top: var(--ww-space-2);
+}
