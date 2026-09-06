@@ -1,0 +1,45 @@
+{
+  "title": "Wellwisher / Today",
+  "question": "Which composition should anchor the Today surface? Each keeps Today first, Week close at hand, and makes a focused work session feel like a supported choice rather than a demand.",
+  "options": [
+    {
+      "id": "one-clear-next-thing",
+      "label": "One clear next thing",
+      "kicker": "THE ROLL",
+      "thesis": "Put one calm, authoritative recommendation at the center. Open a lightweight focus session from it, then make the rest of the day and week feel safely held in the background.",
+      "palette": ["#091522", "#9aa878", "#f6aa7b"],
+      "materials": ["deep blue-charcoal", "restrained sage", "muted peach", "editorial serif perspective"],
+      "viewport": "desktop Today surface, responsive down to mobile",
+      "risk": "The single recommendation could feel too narrow if the week context is not kept visibly close.",
+      "comp": ".impeccable/mocks/decision/one-clear-next-thing.png"
+    },
+    {
+      "id": "week-ribbon",
+      "label": "Week ribbon",
+      "thesis": "Let the week provide the reassuring frame first: day-level allocations across the horizon, with Today and the focus-session recommendation immediately beneath it.",
+      "palette": ["#0b1724", "#9cae7a", "#e7b48f"],
+      "materials": ["horizontal week rail", "day allocation blocks", "quiet side navigation", "soft focus control"],
+      "viewport": "desktop Week-aware Today surface, collapsible on mobile",
+      "risk": "The week can compete with the emotional clarity of the one thing you should do now.",
+      "comp": ".impeccable/mocks/decision/week-ribbon.png"
+    },
+    {
+      "id": "voice-companion-stage",
+      "label": "Voice companion stage",
+      "thesis": "Give the accompanying voice a visible home beside the recommendation. The product feels like someone is with you in the day, without turning into a chat transcript or reading the screen aloud.",
+      "palette": ["#0a1622", "#a9bb79", "#f6b18a"],
+      "materials": ["ambient companion panel", "subtle waveform", "focus-session choices", "bottom-centre dictation"],
+      "viewport": "desktop companion layout, stacked gracefully on mobile",
+      "risk": "The voice presence may become the visual subject instead of the work you came to do.",
+      "comp": ".impeccable/mocks/decision/voice-companion-stage.png"
+    }
+  ],
+  "reroll": {
+    "registers": ["safer", "bolder"]
+  },
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "steer": true
+}

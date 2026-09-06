@@ -185,11 +185,89 @@ The user can correct or enter the essentials through a small “Protect time” 
 
 - label or short description;
 - start and end date/time;
-- repeat behavior is out of V1 unless the personal use case proves it necessary.
+- a simple repeat pattern such as daily, working days, or selected days.
 
 Both paths must create the same internal unavailable-time concept. This preserves a clean seam for future calendar integration without requiring calendar integration now.
 
-## 8. Product language
+## 8. Today and Week surface model
+
+The current recommended visual synthesis combines the strongest parts of the explored directions:
+
+- A provides the emotional clarity: Today begins with one personal perspective and one clear next recommendation.
+- C provides the useful depth: Today can show schedule-derived capacity and a simple day timeline.
+- B provides the orientation: the week is visible as allocation context, but does not repeat the Today recommendation.
+
+### 8.1 Navigation
+
+- Today is the default route and the primary working surface.
+- Week is a sibling route reached through an explicit Today / Week toggle in the top header.
+- The Today surface contains a compact, clickable “This week” ribbon. Each day shows day-level allocations and remaining available hours.
+- Clicking a day in the ribbon opens that day’s detail view. Clicking Week opens the full seven-day allocation view.
+- A persistent sidebar is not required for the primary experience. Settings belongs behind the profile/avatar control in the header so the working surface remains spacious on desktop and natural on mobile.
+
+The full Week route is an allocation map rather than a fixed calendar. It may use seven day columns with a small summary for each day:
+
+- protected commitments shown as exact, warm blocks;
+- flexible work shown as suggested allocations, not appointments;
+- open capacity shown explicitly as remaining room;
+- a compact summary of planned hours, open hours, and protected blocks.
+
+The Week route should be the place to answer “how is the week carrying my priorities?” The Day route remains the place to answer “what is true about this particular day?”
+
+### 8.2 Information hierarchy
+
+Today should show, in order:
+
+1. A short accompanying voice perspective.
+2. One recommendation with calm authority.
+3. A clear focus-session action, such as “Start focus · 90 min”, which can launch a Pomodoro-style session.
+4. The next protected commitment or relevant constraint.
+5. Today’s available capacity and anchored schedule detail, when useful.
+6. The week ribbon as context, with visible allocation and available-hour summaries.
+
+The week ribbon must not become a second Today dashboard. It should answer “what is allocated across the horizon?” rather than repeat “what should I do now?”. Prefer a single lightweight strip with thin allocation/capacity bars and short summaries such as “3h open”, “AI · morning”, or “Family protected”. The full Week route may show richer day-level allocation detail.
+
+### 8.3 Fixed commitments versus flexible work
+
+Wellwisher must distinguish between what is fixed in the user’s life and what is a recommendation about how to use available time:
+
+- **Fixed / protected:** manually entered unavailable time, family commitments, appointments, and any session the user explicitly pins to a time.
+- **Suggested window:** a recommended period such as “AI · morning” or “best window for Lekhan”, based on capacity, energy, deadlines, and other constraints. This is movable by default.
+- **Open capacity:** time that remains intentionally unassigned and can be used, rested through, or allocated later.
+
+AI Engineering, Lekhan, and Software Factory should not become fixed calendar blocks simply because Wellwisher displays them on Today or Week. A recommendation may include a duration and a preferred window, but it becomes an exact time slot only when the user asks Wellwisher to pin it or the user’s planning preferences explicitly require fixed scheduling. The interface should make “Pin to a time” an available choice, not the default.
+
+### 8.4 Focus and completion state
+
+Starting the recommendation opens a lightweight focus session. The session should support Pomodoro-like intervals without turning the product into a timer-first app.
+
+When the recommended work is completed, Today changes state instead of presenting another obligation. Wellwisher should acknowledge the outcome and explicitly return agency to the user, for example:
+
+> You did the important thing for today. You can rest, or choose something else if you feel like it.
+
+The completion state may offer “Rest” and “Choose something else” as soft next actions. It should never imply that relaxation is a failure to continue.
+
+Visually, completion should be a meaningful change of state: the completed focus block remains visible as evidence of the outcome, the next protected commitment stays in view, and the week context becomes quieter. Wellwisher should not immediately replace the completed work with another required task.
+
+### 8.5 Rhythm-aware Planner
+
+The Planner should use a hybrid model: the user tells Wellwisher what has an explicit time or repeats, and Wellwisher allocates the flexible remainder.
+
+Planner items have three useful shapes:
+
+- **Rhythm anchor:** a repeating part of life such as a morning routine, lunch at 1:30 PM, sunset time from 6–8 PM, gym at 8 PM, or dinner between 9–10 PM. Anchors can be daily, limited to working days, or assigned to selected days.
+- **Protected commitment:** a specific non-negotiable event or unavailable window.
+- **Flexible intention:** work or leisure with a duration and optional preference, such as AI Engineering for 90 minutes, Lekhan for 45 minutes, trending learning during the sunset outing, a walk, or reading.
+
+The user should be able to say something like:
+
+> “On working days, lunch is around 1:30, I usually go out from 6 to 8, gym starts at 8, and dinner is between 9 and 10. Arrange my work around that.”
+
+Wellwisher should create the rhythm anchors, allocate flexible intentions into the remaining capacity, and leave deliberate open space. “Arrange my week” is an explicit action, not an invisible background mutation. It must never move a protected anchor silently; conflicts should be surfaced as a recommendation with a visible trade-off and Undo.
+
+Leisure is a first-class intention. Sunset learning, reading, walking, or doing nothing are valid uses of open capacity, not rewards that appear only after all work is complete.
+
+## 9. Product language
 
 ### Use
 
@@ -207,7 +285,7 @@ Both paths must create the same internal unavailable-time concept. This preserve
 - A dashboard full of interchangeable cards.
 - Pretending to know the user’s emotional state without evidence.
 
-## 9. V1 boundaries
+## 10. V1 boundaries
 
 ### In scope for the visual/product direction
 
@@ -230,7 +308,7 @@ Both paths must create the same internal unavailable-time concept. This preserve
 - Calendar integration implementation.
 - Notifications, reminders, analytics, billing, or SaaS concerns.
 
-## 10. Design success criteria
+## 11. Design success criteria
 
 The visual/product direction is successful if a user can:
 
@@ -243,7 +321,7 @@ The visual/product direction is successful if a user can:
 7. Add unavailable time naturally and correct it quickly.
 8. Use the product comfortably with audio muted.
 
-## 11. Prototype record
+## 12. Prototype record
 
 The visual exploration was conducted as throwaway browser mockups using the approved visual companion workflow and Impeccable design guidance. The prototypes are exploratory artifacts, not production UI:
 
@@ -256,4 +334,4 @@ The visual exploration was conducted as throwaway browser mockups using the appr
 - ambient companion voice states;
 - unavailable-time entry paths.
 
-The visual direction is now approved. Production implementation should begin only after this written spec is reviewed and a separate implementation plan is approved.
+The direction is converging on a Today-first, capacity-aware cockpit. Production implementation should begin only after this written spec and the final Today/Week composition are reviewed, then a separate implementation plan is approved.

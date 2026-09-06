@@ -1,0 +1,45 @@
+{
+  "title": "Wellwisher / Planner",
+  "question": "Which Planner composition should we carry forward? All three support work and leisure intentions, drag-and-drop suggestions, protected commitments, open capacity, and optional pinning to an exact time.",
+  "options": [
+    {
+      "id": "intentions-shelf",
+      "label": "Intentions shelf",
+      "kicker": "THE ROLL",
+      "thesis": "Keep unplaced work and leisure ideas visible in a shelf, then arrange them across a spacious weekly horizon. Planning feels like placing possibilities, not filling a calendar.",
+      "palette": ["#0b1824", "#9baa7b", "#efaa7e"],
+      "materials": ["intentions shelf", "weekly horizon", "suggested blocks", "open capacity"],
+      "viewport": "desktop planner, responsive to stacked shelf and horizon on mobile",
+      "risk": "The week horizon can become too calendar-like if the suggested state is not visually distinct enough.",
+      "comp": ".impeccable/mocks/planner/intentions-shelf.png"
+    },
+    {
+      "id": "selected-day-lanes",
+      "label": "Selected-day lanes",
+      "thesis": "Plan one day at a time through three clear lanes: Protected, Suggested windows, and Open capacity. The user gets precision without being forced into exact scheduling.",
+      "palette": ["#0b1722", "#a5b67f", "#dca47f"],
+      "materials": ["day lanes", "intentions tray", "mini-week rail", "pin-to-time affordance"],
+      "viewport": "desktop day planning canvas, stacked lanes on mobile",
+      "risk": "The selected-day focus may make the larger week harder to hold in mind.",
+      "comp": ".impeccable/mocks/planner/selected-day-lanes.png"
+    },
+    {
+      "id": "allocation-board",
+      "label": "Allocation board",
+      "thesis": "Make the whole week directly rearrangeable: seven day columns, a side summary, unplaced intentions, Rebalance, and Undo. This is the most powerful planner, but needs the strongest guardrails against over-planning.",
+      "palette": ["#091622", "#9eae7a", "#eeb082"],
+      "materials": ["seven day columns", "unplaced tray", "rebalance control", "planned/protected/open summary"],
+      "viewport": "desktop week planner, horizontally scrollable on mobile",
+      "risk": "The board can become a productivity control surface if every open space feels like a gap to fill.",
+      "comp": ".impeccable/mocks/planner/allocation-board.png"
+    }
+  ],
+  "reroll": {
+    "registers": ["safer", "bolder"]
+  },
+  "buildPath": {
+    "value": "comp",
+    "toggle": true
+  },
+  "steer": true
+}
