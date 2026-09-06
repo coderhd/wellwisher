@@ -1,0 +1,126 @@
+.lanesContainer {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	width: 100%;
+}
+
+.sectionTitle {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--ww-text);
+	letter-spacing: 0.01em;
+}
+
+.itemsList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-2);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.laneItem {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--ww-space-3) var(--ww-space-4);
+	border-radius: var(--ww-radius-sm);
+	transition: background-color 0.15s ease;
+	gap: var(--ww-space-3);
+}
+
+.itemLeft {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.itemRight {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+	flex-shrink: 0;
+}
+
+.itemTitle {
+	font-size: 0.9375rem;
+	font-weight: 600;
+	color: var(--ww-text);
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+}
+
+.itemTiming {
+	font-size: 0.8125rem;
+	color: var(--ww-muted);
+	font-variant-numeric: tabular-nums;
+}
+
+.badge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px var(--ww-space-2);
+	border-radius: var(--ww-radius-pill);
+	font-size: 0.6875rem;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+/* Protected lane item */
+.itemProtected {
+	background-color: rgba(223, 161, 141, 0.12);
+	border: 1px solid rgba(223, 161, 141, 0.28);
+}
+
+.itemProtected .badge {
+	background-color: rgba(223, 161, 141, 0.25);
+	color: var(--ww-peach);
+}
+
+/* Suggested flexible item */
+.itemSuggested {
+	background-color: rgba(159, 185, 170, 0.12);
+	border: 1px solid rgba(159, 185, 170, 0.28);
+}
+
+.itemSuggested .badge {
+	background-color: rgba(159, 185, 170, 0.25);
+	color: var(--ww-sage);
+}
+
+/* Pinned item */
+.itemPinned {
+	background-color: var(--ww-pinned-surface);
+	border: 1px solid rgba(121, 166, 210, 0.28);
+}
+
+.itemPinned .badge {
+	background-color: rgba(121, 166, 210, 0.25);
+	color: var(--ww-pinned);
+}
+
+/* Open breathing window */
+.itemOpen {
+	background-color: rgba(44, 57, 61, 0.35);
+	border: 1px dashed rgba(184, 193, 191, 0.25);
+}
+
+.itemOpen .badge {
+	background-color: rgba(184, 193, 191, 0.15);
+	color: var(--ww-muted);
+}
+
+.kindBadge {
+	font-size: 0.6875rem;
+	padding: 1px 6px;
+	border-radius: var(--ww-radius-sm);
+	background-color: rgba(0, 0, 0, 0.2);
+	color: var(--ww-muted);
+	font-weight: 500;
+}

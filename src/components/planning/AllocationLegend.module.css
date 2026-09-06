@@ -1,0 +1,65 @@
+.legend {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--ww-space-4);
+	padding: var(--ww-space-2) var(--ww-space-3);
+	background-color: rgba(44, 57, 61, 0.4);
+	border: 1px solid rgba(159, 185, 170, 0.12);
+	border-radius: var(--ww-radius-pill);
+	font-size: 0.75rem;
+	color: var(--ww-muted);
+}
+
+.list {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--ww-space-4);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.item {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+}
+
+.dot {
+	width: 0.5rem;
+	height: 0.5rem;
+	border-radius: var(--ww-radius-pill);
+	flex-shrink: 0;
+}
+
+.dotProtected {
+	background-color: var(--ww-peach);
+	box-shadow: 0 0 6px rgba(223, 161, 141, 0.4);
+}
+
+.dotSuggested {
+	background-color: var(--ww-sage);
+	box-shadow: 0 0 6px rgba(159, 185, 170, 0.4);
+}
+
+.dotPinned {
+	background-color: var(--ww-pinned);
+	box-shadow: 0 0 6px rgba(121, 166, 210, 0.4);
+}
+
+.dotOpen {
+	background-color: transparent;
+	border: 1.5px dashed var(--ww-muted);
+}
+
+.label {
+	color: var(--ww-text);
+	font-weight: 500;
+}
+
+.subtext {
+	font-size: 0.75rem;
+	color: var(--ww-muted);
+}

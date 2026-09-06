@@ -10,3 +10,13 @@ node_modules/
 .env
 .env.*
 .worktrees/
+.next/
+*.tsbuildinfo
+next-env.d.ts
+
+# Test outputs and coverage
+coverage/
+test-results/
+playwright-report/
+blob-report/
+playwright/.cache/

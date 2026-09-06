@@ -1,0 +1,118 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	padding: var(--ww-space-4);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.16);
+	border-radius: var(--ww-radius-md);
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.title {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--ww-text);
+	letter-spacing: 0.01em;
+}
+
+.metrics {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+	gap: var(--ww-space-3);
+}
+
+.metricCard {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: var(--ww-space-2) var(--ww-space-3);
+	border-radius: var(--ww-radius-sm);
+	background-color: rgba(32, 42, 46, 0.6);
+	border: 1px solid rgba(159, 185, 170, 0.08);
+}
+
+.metricLabel {
+	font-size: 0.75rem;
+	color: var(--ww-muted);
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-1);
+}
+
+.metricValue {
+	font-size: 1.125rem;
+	font-weight: 600;
+	color: var(--ww-text);
+}
+
+.protectedValue {
+	color: var(--ww-peach);
+}
+
+.suggestedValue {
+	color: var(--ww-sage);
+}
+
+.openValue {
+	color: var(--ww-stone);
+}
+
+.barTrack {
+	display: flex;
+	height: 8px;
+	width: 100%;
+	background-color: rgba(32, 42, 46, 0.8);
+	border-radius: var(--ww-radius-pill);
+	overflow: hidden;
+	gap: 2px;
+}
+
+.barSegment {
+	height: 100%;
+	transition: width 0.3s ease;
+}
+
+.barProtected {
+	background-color: var(--ww-peach);
+}
+
+.barSuggested {
+	background-color: var(--ww-sage);
+}
+
+.barOpen {
+	background-color: rgba(244, 242, 236, 0.25);
+}
+
+.openWindows {
+	margin-top: var(--ww-space-1);
+	font-size: 0.75rem;
+	color: var(--ww-muted);
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.openWindowsList {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: var(--ww-space-2);
+}
+
+.openWindowTag {
+	padding: 2px var(--ww-space-2);
+	background-color: rgba(159, 185, 170, 0.1);
+	border-radius: var(--ww-radius-sm);
+	color: var(--ww-sage-surface);
+	font-variant-numeric: tabular-nums;
+}

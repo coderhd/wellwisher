@@ -1,0 +1,141 @@
+.ribbonContainer {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	padding: var(--ww-space-4);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.16);
+	border-radius: var(--ww-radius-md);
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.title {
+	margin: 0;
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: var(--ww-text);
+	letter-spacing: 0.01em;
+}
+
+.fullWeekLink {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-1);
+	font-size: 0.8125rem;
+	font-weight: 500;
+	color: var(--ww-sage);
+	text-decoration: none;
+	transition: color 0.15s ease;
+}
+
+.fullWeekLink:hover {
+	color: var(--ww-sage-surface);
+	text-decoration: underline;
+}
+
+.daysGrid {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+	gap: var(--ww-space-2);
+}
+
+.dayCard {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: var(--ww-space-2) var(--ww-space-1);
+	border-radius: var(--ww-radius-sm);
+	background-color: rgba(32, 42, 46, 0.6);
+	border: 1px solid rgba(159, 185, 170, 0.1);
+	text-decoration: none;
+	color: var(--ww-text);
+	transition: all 0.15s ease;
+	min-width: 0;
+}
+
+.dayCard:hover {
+	background-color: rgba(159, 185, 170, 0.12);
+	border-color: rgba(159, 185, 170, 0.3);
+	transform: translateY(-1px);
+}
+
+.dayCard:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
+.dayCardActive {
+	background-color: rgba(159, 185, 170, 0.2);
+	border-color: var(--ww-sage);
+	box-shadow: 0 0 8px rgba(159, 185, 170, 0.2);
+}
+
+.dayName {
+	font-size: 0.75rem;
+	font-weight: 600;
+	color: var(--ww-muted);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.dayNumber {
+	font-size: 1rem;
+	font-weight: 700;
+	margin: 2px 0;
+	color: var(--ww-text);
+}
+
+.dayCardActive .dayName,
+.dayCardActive .dayNumber {
+	color: var(--ww-sage-surface);
+}
+
+.dayPills {
+	display: flex;
+	align-items: center;
+	gap: 3px;
+	margin-top: 4px;
+}
+
+.pillDot {
+	width: 6px;
+	height: 6px;
+	border-radius: var(--ww-radius-pill);
+}
+
+.pillProtected {
+	background-color: var(--ww-peach);
+}
+
+.pillSuggested {
+	background-color: var(--ww-sage);
+}
+
+.dayOpenHours {
+	margin-top: var(--ww-space-1);
+	font-size: 0.6875rem;
+	color: var(--ww-muted);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: center;
+}
+
+@media (max-width: 640px) {
+	.daysGrid {
+		gap: var(--ww-space-1);
+	}
+
+	.dayCard {
+		padding: var(--ww-space-1);
+	}
+
+	.dayOpenHours {
+		font-size: 0.625rem;
+	}
+}
