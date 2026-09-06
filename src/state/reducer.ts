@@ -55,6 +55,18 @@ export type WellwisherAction =
 			payload: { allocationId: string; target: MoveTarget }
 	  }
 	| {
+			type: 'SUGGEST_INTENTION'
+			payload: {
+				intentionId: string
+				target: {
+					date: string
+					window?: 'morning' | 'afternoon' | 'evening'
+					start?: string
+					end?: string
+				}
+			}
+	  }
+	| {
 			type: 'PIN_ALLOCATION'
 			payload: { allocationId: string; start: string }
 	  }
@@ -180,18 +192,95 @@ export function wellwisherReducer (
 				action.payload.target,
 			)
 
+			let nextAllocations = movedPlan.allocations
 			const hasChanged =
 				JSON.stringify(movedPlan.allocations) !==
 				JSON.stringify(state.allocations)
+
 			if (!hasChanged) {
-				return state
+				const intention = state.intentions.find(
+					(i) => i.id === action.payload.allocationId,
+				)
+				if (
+					intention &&
+					!state.allocations.some((a) => a.intentionId === intention.id)
+				) {
+					const newAllocation: Allocation = {
+						id: `${intention.id}:${action.payload.target.date}`,
+						intentionId: intention.id,
+						date: action.payload.target.date,
+						window:
+							action.payload.target.window ??
+							intention.preferredWindow ??
+							'morning',
+						mode: 'suggested',
+						durationMinutes: intention.durationMinutes,
+					}
+					nextAllocations = [...state.allocations, newAllocation]
+				} else {
+					return state
+				}
 			}
 
 			return {
 				...state,
-				allocations: movedPlan.allocations.map((a) => ({ ...a })),
+				allocations: nextAllocations.map((a) => ({ ...a })),
 				lastPlanChange: {
 					description: `Moved allocation ${action.payload.allocationId} to ${action.payload.target.date}`,
+					timestamp: new Date().toISOString(),
+					previousAllocations: state.allocations.map((a) => ({ ...a })),
+					previousProtectedCommitments: state.protectedCommitments.map((c) => ({
+						...c,
+					})),
+				},
+			}
+		}
+
+		case 'SUGGEST_INTENTION': {
+			const intention = state.intentions.find(
+				(i) => i.id === action.payload.intentionId,
+			)
+			if (!intention) {
+				return state
+			}
+
+			const existingAllocation = state.allocations.find(
+				(a) => a.intentionId === intention.id,
+			)
+
+			const allocationId =
+				existingAllocation?.id ??
+				`${intention.id}:${action.payload.target.date}`
+			const newAllocation: Allocation = {
+				id: allocationId,
+				intentionId: intention.id,
+				date: action.payload.target.date,
+				window:
+					action.payload.target.window ??
+					intention.preferredWindow ??
+					'morning',
+				mode: 'suggested',
+				durationMinutes: intention.durationMinutes,
+				...(action.payload.target.start
+					? {
+							start: action.payload.target.start,
+							end: action.payload.target.end,
+							mode: 'pinned' as const,
+						}
+					: {}),
+			}
+
+			const nextAllocations = existingAllocation
+				? state.allocations.map((a) =>
+						a.id === existingAllocation.id ? newAllocation : a,
+					)
+				: [...state.allocations, newAllocation]
+
+			return {
+				...state,
+				allocations: nextAllocations,
+				lastPlanChange: {
+					description: `Suggested ${intention.title} on ${action.payload.target.date}`,
 					timestamp: new Date().toISOString(),
 					previousAllocations: state.allocations.map((a) => ({ ...a })),
 					previousProtectedCommitments: state.protectedCommitments.map((c) => ({
