@@ -96,13 +96,13 @@
 
 /* Pinned item */
 .itemPinned {
-	background-color: rgba(121, 166, 210, 0.12);
+	background-color: var(--ww-pinned-surface);
 	border: 1px solid rgba(121, 166, 210, 0.28);
 }
 
 .itemPinned .badge {
 	background-color: rgba(121, 166, 210, 0.25);
-	color: #79a6d2;
+	color: var(--ww-pinned);
 }
 
 /* Open breathing window */

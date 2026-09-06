@@ -16,7 +16,7 @@ export function AllocationLegend ({
 		: styles.legend
 
 	return (
-		<nav
+		<section
 			className={containerClass}
 			aria-label='Allocation legend'
 			role='region'
@@ -57,6 +57,6 @@ export function AllocationLegend ({
 					<span className={styles.subtext}>(breathing room)</span>
 				</li>
 			</ul>
-		</nav>
+		</section>
 	)
 }

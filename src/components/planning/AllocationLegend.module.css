@@ -45,7 +45,7 @@
 }
 
 .dotPinned {
-	background-color: #79a6d2;
+	background-color: var(--ww-pinned);
 	box-shadow: 0 0 6px rgba(121, 166, 210, 0.4);
 }
 
@@ -57,4 +57,9 @@
 .label {
 	color: var(--ww-text);
 	font-weight: 500;
+}
+
+.subtext {
+	font-size: 0.75rem;
+	color: var(--ww-muted);
 }
