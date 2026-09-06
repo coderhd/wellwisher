@@ -234,8 +234,8 @@ export function AllocationBoard ({
 
 				{/* Main Layout: Sidebar Shelf + 7-Day Columns */}
 				<div className='plannerLayout'>
-					{/* Sidebar */}
-					<aside className='plannerSidebar'>
+					{/* Sidebar Shelf */}
+					<div className='plannerSidebar'>
 						{/* Unplaced Intentions Shelf */}
 						<section
 							className='shelfSection'
@@ -287,12 +287,13 @@ export function AllocationBoard ({
 								</ul>
 							</section>
 						)}
-					</aside>
+					</div>
 
 					{/* 7-Day Columns */}
-					<main
+					<section
 						className='weekGrid'
 						aria-label='Week allocation grid'
+						role='region'
 					>
 						{weekPlan.days.map((day) => {
 							const dateObj = parseISO(day.date)
@@ -395,7 +396,7 @@ export function AllocationBoard ({
 								</div>
 							)
 						})}
-					</main>
+					</section>
 				</div>
 			</div>
 		</DndContext>

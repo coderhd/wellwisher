@@ -176,8 +176,9 @@
 	opacity: 0.92;
 }
 
-.primaryButton:active {
-	transform: scale(0.98);
+.primaryButton:focus-visible {
+	outline: 3px solid var(--ww-sage-surface);
+	outline-offset: 2px;
 }
 
 .secondaryButton {
@@ -197,6 +198,11 @@
 	border-color: rgba(184, 193, 191, 0.5);
 }
 
+.secondaryButton:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
 .dangerButton {
 	padding: var(--ww-space-3) var(--ww-space-4);
 	background: transparent;
@@ -210,4 +216,10 @@
 
 .dangerButton:hover {
 	color: var(--ww-text);
+}
+
+.dangerButton:focus-visible {
+	outline: 2px solid var(--ww-peach);
+	outline-offset: 2px;
+	border-radius: var(--ww-radius-sm);
 }

@@ -170,8 +170,9 @@
 	opacity: 0.92;
 }
 
-.restButton:active {
-	transform: scale(0.98);
+.restButton:focus-visible {
+	outline: 3px solid var(--ww-sage-surface);
+	outline-offset: 2px;
 }
 
 .recommendedTag {
@@ -199,6 +200,11 @@
 .chooseAnotherButton:hover {
 	background: rgba(255, 255, 255, 0.06);
 	border-color: rgba(184, 193, 191, 0.5);
+}
+
+.chooseAnotherButton:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
 }
 
 .quietSummary {

@@ -10,6 +10,7 @@
 	border-radius: var(--ww-radius-lg);
 	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.35);
 	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
 	animation: slideUp 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
@@ -87,6 +88,11 @@
 	background: rgba(255, 255, 255, 0.14);
 }
 
+.micToggleBtn:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
 .micToggleBtnActive {
 	background: var(--ww-peach);
 	color: var(--ww-cockpit);
@@ -114,8 +120,11 @@
 	transition: border-color 0.15s ease;
 }
 
+.textarea:focus-visible,
 .textarea:focus {
 	border-color: var(--ww-sage);
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 1px;
 }
 
 .textarea::placeholder {
@@ -145,6 +154,11 @@
 	color: var(--ww-text);
 }
 
+.cancelBtn:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
 .sendBtn {
 	padding: var(--ww-space-2) var(--ww-space-5);
 	background: var(--ww-peach);
@@ -159,6 +173,11 @@
 
 .sendBtn:hover:not(:disabled) {
 	transform: scale(1.02);
+}
+
+.sendBtn:focus-visible {
+	outline: 2px solid var(--ww-sage-surface);
+	outline-offset: 2px;
 }
 
 .sendBtn:disabled {

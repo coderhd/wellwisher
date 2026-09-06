@@ -96,6 +96,11 @@
 	cursor: not-allowed;
 }
 
+.actionButton:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
 .plannerLayout {
 	display: grid;
 	grid-template-columns: 320px 1fr;
@@ -328,6 +333,11 @@
 
 .pinButton:hover {
 	background: rgba(121, 166, 210, 0.25);
+}
+
+.pinButton:focus-visible {
+	outline: 2px solid var(--ww-pinned);
+	outline-offset: 1px;
 }
 
 /* Rhythm Anchor Card */
