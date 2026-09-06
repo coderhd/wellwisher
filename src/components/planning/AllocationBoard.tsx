@@ -13,7 +13,6 @@ import { format, parseISO } from 'date-fns'
 import React, { useMemo } from 'react'
 
 import { calculateCapacity } from '../../domain/planning/capacity'
-import { DEMO_INTENTIONS } from '../../data/demoScenario'
 import type {
 	FlexibleIntention,
 	ProtectedCommitment,
@@ -21,7 +20,6 @@ import type {
 	WeekPlan,
 } from '../../domain/planning/types'
 import type { PlanChange } from '../../state/reducer'
-import { useWellwisher } from '../../state/WellwisherProvider'
 import { formatDurationHours } from './CapacityPanel'
 import {
 	type AvailableDayOption,
@@ -128,7 +126,7 @@ function WindowZone ({
 export function AllocationBoard ({
 	weekPlan,
 	unplacedIntentions,
-	intentions,
+	intentions = [],
 	anchors = [],
 	lastPlanChange,
 	onSuggest,
@@ -137,25 +135,8 @@ export function AllocationBoard ({
 	onUndo,
 	className,
 }: AllocationBoardProps): React.JSX.Element {
-	let contextState: ReturnType<typeof useWellwisher>['state'] | undefined
-	try {
-		// eslint-disable-next-line react-hooks/rules-of-hooks
-		const context = useWellwisher()
-		contextState = context.state
-	} catch {
-		// Used outside WellwisherProvider in isolated tests
-	}
-
 	const allIntentions = useMemo(() => {
 		const map = new Map<string, FlexibleIntention>()
-		for (const item of DEMO_INTENTIONS) {
-			map.set(item.id, item)
-		}
-		if (contextState?.intentions) {
-			for (const item of contextState.intentions) {
-				map.set(item.id, item)
-			}
-		}
 		if (intentions) {
 			for (const item of intentions) {
 				map.set(item.id, item)
@@ -165,7 +146,7 @@ export function AllocationBoard ({
 			map.set(item.id, item)
 		}
 		return map
-	}, [contextState?.intentions, intentions, unplacedIntentions])
+	}, [intentions, unplacedIntentions])
 
 	const availableDays: AvailableDayOption[] = useMemo(() => {
 		return weekPlan.days.map((day) => {

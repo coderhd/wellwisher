@@ -117,6 +117,26 @@ describe('AllocationBoard and Planning Components', () => {
 		},
 	]
 
+	const mockIntentions: FlexibleIntention[] = [
+		{
+			id: 'ai-engineering',
+			title: 'AI Engineering',
+			kind: 'work',
+			durationMinutes: 90,
+			preferredWindow: 'morning',
+			priority: 1,
+		},
+		{
+			id: 'lekhan',
+			title: 'Lekhan',
+			kind: 'work',
+			durationMinutes: 45,
+			preferredWindow: 'morning',
+			priority: 2,
+		},
+		...mockUnplacedIntentions,
+	]
+
 	const mockAnchors: RhythmAnchor[] = [
 		{
 			id: 'lunch',
@@ -144,6 +164,7 @@ describe('AllocationBoard and Planning Components', () => {
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={onSuggest}
 				onPin={onPin}
@@ -172,6 +193,7 @@ describe('AllocationBoard and Planning Components', () => {
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={vi.fn()}
 				onPin={vi.fn()}
@@ -190,6 +212,7 @@ describe('AllocationBoard and Planning Components', () => {
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={vi.fn()}
 				onPin={vi.fn()}
@@ -222,6 +245,7 @@ describe('AllocationBoard and Planning Components', () => {
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={onSuggest}
 				onPin={onPin}
@@ -252,6 +276,7 @@ describe('AllocationBoard and Planning Components', () => {
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={[]}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={onSuggest}
 				onPin={onPin}
@@ -266,9 +291,10 @@ describe('AllocationBoard and Planning Components', () => {
 
 		await user.click(pinButton)
 
-		// Time input is revealed
+		// Time input is revealed and has type="time"
 		const timeInput = screen.getByLabelText(/start time|pin time/i)
 		expect(timeInput).toBeInTheDocument()
+		expect(timeInput).toHaveAttribute('type', 'time')
 
 		await user.clear(timeInput)
 		await user.type(timeInput, '09:15')
@@ -281,11 +307,55 @@ describe('AllocationBoard and Planning Components', () => {
 		expect(onPin).toHaveBeenCalledWith('alloc-ai-mon', '09:15')
 	})
 
+	it('validates HH:mm time format before invoking onPin', async () => {
+		const user = userEvent.setup()
+		const onPin = vi.fn()
+
+		render(
+			<IntentionCard
+				intention={mockIntentions[0]}
+				allocation={{
+					id: 'alloc-test',
+					intentionId: 'ai-engineering',
+					date: '2026-09-07',
+					window: 'morning',
+					mode: 'suggested',
+					durationMinutes: 90,
+				}}
+				onPin={onPin}
+			/>,
+		)
+
+		const pinButton = screen.getByRole('button', {
+			name: /pin ai engineering to a time|pin to a time/i,
+		})
+		await user.click(pinButton)
+
+		const timeInput = screen.getByLabelText(/start time/i)
+		expect(timeInput).toHaveAttribute('type', 'time')
+
+		// Attempt to submit invalid time
+		await user.clear(timeInput)
+		await user.type(timeInput, 'invalid')
+		const confirmPinButton = screen.getByRole('button', {
+			name: /confirm pin/i,
+		})
+		await user.click(confirmPinButton)
+		expect(onPin).not.toHaveBeenCalled()
+
+		// Submit valid time
+		await user.clear(timeInput)
+		await user.type(timeInput, '14:30')
+		await user.click(confirmPinButton)
+		expect(onPin).toHaveBeenCalledWith('alloc-test', '14:30')
+	})
+
 	it('distinguishes pinned allocations with exact start times from suggested ones', () => {
 		render(
 			<AllocationBoard
 				weekPlan={mockWeekPlan}
 				unplacedIntentions={[]}
+				intentions={mockIntentions}
 				anchors={mockAnchors}
 				onSuggest={vi.fn()}
 				onPin={vi.fn()}

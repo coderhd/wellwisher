@@ -299,12 +299,13 @@
 }
 
 .pinInput {
-	width: 80px;
+	width: 96px;
 	padding: 3px 6px;
 	border: 1px solid rgba(159, 185, 170, 0.3);
 	border-radius: var(--ww-radius-sm);
 	background: var(--ww-cockpit);
 	color: var(--ww-text);
+	color-scheme: dark;
 	font-family: var(--ww-font-sans);
 	font-size: 0.75rem;
 }

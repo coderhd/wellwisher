@@ -26,6 +26,19 @@ export interface IntentionCardProps {
 	className?: string
 }
 
+const TIME_REGEX = /^([01]\d|2[0-3]):[0-5]\d$/
+
+function normalizeAndValidateTime (value: string): string | null {
+	const trimmed = value.trim()
+	if (TIME_REGEX.test(trimmed)) {
+		return trimmed
+	}
+	if (/^[0-9]:[0-5]\d$/.test(trimmed)) {
+		return `0${trimmed}`
+	}
+	return null
+}
+
 export function IntentionCard ({
 	intention,
 	allocation,
@@ -79,8 +92,9 @@ export function IntentionCard ({
 
 	function handlePinSubmit (event: React.FormEvent) {
 		event.preventDefault()
-		if (allocation && onPin && pinTime) {
-			onPin(allocation.id, pinTime)
+		const validated = normalizeAndValidateTime(pinTime)
+		if (allocation && onPin && validated) {
+			onPin(allocation.id, validated)
 			setIsPinning(false)
 		}
 	}
@@ -224,7 +238,7 @@ export function IntentionCard ({
 							</label>
 							<input
 								id={`pin-time-${intention.id}`}
-								type='text'
+								type='time'
 								className='pinInput'
 								value={pinTime}
 								placeholder='09:00'
