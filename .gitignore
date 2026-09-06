@@ -1,0 +1,11 @@
+# Temporary visual-companion sessions
+.superpowers/
+
+# Local Impeccable overrides
+.impeccable/config.local.json
+
+# Local environment and generated files
+.DS_Store
+node_modules/
+.env
+.env.*
