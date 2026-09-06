@@ -1,5 +1,14 @@
 import { addDays, format, parseISO } from 'date-fns'
 
+import {
+	cancelSession,
+	completeSession,
+	pauseSession,
+	resumeSession,
+	startSession,
+	tickSession,
+} from '../domain/focus/session'
+import type { FocusSessionState } from '../domain/focus/types'
 import { arrangeWeek } from '../domain/planning/arrange-week'
 import { calculateCapacity } from '../domain/planning/capacity'
 import { moveAllocation, pinAllocation } from '../domain/planning/mutations'
@@ -14,12 +23,7 @@ import type {
 	WeekPlan,
 } from '../domain/planning/types'
 
-export interface FocusSessionState {
-	status: 'idle' | 'running' | 'paused' | 'completed'
-	intentionId: string
-	elapsedSeconds: number
-	targetSeconds: number
-}
+export type { FocusSessionState }
 
 export interface VoicePreferences {
 	muted: boolean
@@ -75,6 +79,10 @@ export type WellwisherAction =
 			type: 'START_FOCUS'
 			payload: { intentionId: string; targetSeconds?: number }
 	  }
+	| { type: 'PAUSE_FOCUS' }
+	| { type: 'RESUME_FOCUS' }
+	| { type: 'TICK_FOCUS'; payload?: { deltaSeconds?: number } }
+	| { type: 'CANCEL_FOCUS' }
 	| { type: 'COMPLETE_FOCUS'; payload?: { elapsedSeconds?: number } }
 	| { type: 'SET_VOICE_PREFERENCE'; payload: Partial<VoicePreferences> }
 	| { type: 'RESET_STATE'; payload?: WellwisherState }
@@ -351,24 +359,52 @@ export function wellwisherReducer (
 
 			return {
 				...state,
-				focusSession: {
-					status: 'running',
-					intentionId: action.payload.intentionId,
-					elapsedSeconds: 0,
-					targetSeconds: action.payload.targetSeconds ?? defaultSeconds,
-				},
+				focusSession: startSession(
+					state.focusSession,
+					action.payload.intentionId,
+					action.payload.targetSeconds ?? defaultSeconds,
+				),
+			}
+		}
+
+		case 'PAUSE_FOCUS': {
+			return {
+				...state,
+				focusSession: pauseSession(state.focusSession),
+			}
+		}
+
+		case 'RESUME_FOCUS': {
+			return {
+				...state,
+				focusSession: resumeSession(state.focusSession),
+			}
+		}
+
+		case 'TICK_FOCUS': {
+			return {
+				...state,
+				focusSession: tickSession(
+					state.focusSession,
+					action.payload?.deltaSeconds ?? 1,
+				),
+			}
+		}
+
+		case 'CANCEL_FOCUS': {
+			return {
+				...state,
+				focusSession: cancelSession(state.focusSession),
 			}
 		}
 
 		case 'COMPLETE_FOCUS': {
 			return {
 				...state,
-				focusSession: {
-					...state.focusSession,
-					status: 'completed',
-					elapsedSeconds:
-						action.payload?.elapsedSeconds ?? state.focusSession.targetSeconds,
-				},
+				focusSession: completeSession(
+					state.focusSession,
+					action.payload?.elapsedSeconds,
+				),
 			}
 		}
 

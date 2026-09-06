@@ -3,6 +3,8 @@
 import { format, parseISO } from 'date-fns'
 import React, { useCallback } from 'react'
 
+import { FocusSession } from '../../components/focus/FocusSession'
+import { TodayCompletion } from '../../components/focus/TodayCompletion'
 import { AllocationLegend } from '../../components/planning/AllocationLegend'
 import { CapacityPanel } from '../../components/planning/CapacityPanel'
 import { DayLanes } from '../../components/planning/DayLanes'
@@ -22,9 +24,17 @@ export function TodaySurface (): React.JSX.Element {
 	const todayPlan = getTodayPlan(todayDate)
 	const recommendation = getRecommendation(todayDate)
 	const isMuted = state.voicePreferences.muted
+
+	const focusSession = state.focusSession
 	const isFocusActive =
-		state.focusSession.status === 'running' &&
-		state.focusSession.intentionId === recommendation?.intention.id
+		focusSession.status === 'running' || focusSession.status === 'paused'
+	const isFocusCompleted = focusSession.status === 'completed'
+
+	const focusIntention =
+		state.intentions.find((i) => i.id === focusSession.intentionId) ??
+		recommendation?.intention
+
+	const nextProtectedCommitment = todayPlan.protectedCommitments[0]
 
 	const handleToggleVoice = useCallback(() => {
 		dispatch({
@@ -45,6 +55,29 @@ export function TodaySurface (): React.JSX.Element {
 		}
 	}, [dispatch, recommendation])
 
+	const handlePauseFocus = useCallback(() => {
+		dispatch({ type: 'PAUSE_FOCUS' })
+	}, [dispatch])
+
+	const handleResumeFocus = useCallback(() => {
+		dispatch({ type: 'RESUME_FOCUS' })
+	}, [dispatch])
+
+	const handleTickFocus = useCallback(
+		(delta: number) => {
+			dispatch({ type: 'TICK_FOCUS', payload: { deltaSeconds: delta } })
+		},
+		[dispatch],
+	)
+
+	const handleCompleteFocus = useCallback(() => {
+		dispatch({ type: 'COMPLETE_FOCUS' })
+	}, [dispatch])
+
+	const handleCancelFocus = useCallback(() => {
+		dispatch({ type: 'CANCEL_FOCUS' })
+	}, [dispatch])
+
 	const dateObj = parseISO(todayDate)
 	const formattedDate = format(dateObj, 'EEEE, MMMM d')
 
@@ -61,7 +94,9 @@ export function TodaySurface (): React.JSX.Element {
 						type='button'
 						className={styles.voiceButton}
 						onClick={handleToggleVoice}
-						aria-label={isMuted ? 'Unmute companion audio' : 'Mute companion audio'}
+						aria-label={
+							isMuted ? 'Unmute companion audio' : 'Mute companion audio'
+						}
 					>
 						<span
 							className={`${styles.voiceIndicator} ${isMuted ? styles.voiceIndicatorMuted : ''}`}
@@ -82,8 +117,37 @@ export function TodaySurface (): React.JSX.Element {
 				</p>
 			</section>
 
-			{/* Recommendation Card */}
-			{recommendation && (
+			{/* Focus Session Active State */}
+			{isFocusActive && (
+				<FocusSession
+					session={focusSession}
+					intention={focusIntention}
+					reason={
+						focusIntention?.id === recommendation?.intention.id
+							? recommendation?.reason
+							: undefined
+					}
+					onPause={handlePauseFocus}
+					onResume={handleResumeFocus}
+					onComplete={handleCompleteFocus}
+					onCancel={handleCancelFocus}
+					onTick={handleTickFocus}
+				/>
+			)}
+
+			{/* Restorative Completion State */}
+			{isFocusCompleted && (
+				<TodayCompletion
+					session={focusSession}
+					intention={focusIntention}
+					nextCommitment={nextProtectedCommitment}
+					onRestNow={() => {}}
+					onChooseAnother={handleCancelFocus}
+				/>
+			)}
+
+			{/* Recommendation Card (when idle) */}
+			{!isFocusActive && !isFocusCompleted && recommendation && (
 				<section
 					className={styles.recommendationCard}
 					aria-label="Today's recommendation"
@@ -114,12 +178,10 @@ export function TodaySurface (): React.JSX.Element {
 					<div className={styles.actionsRow}>
 						<button
 							type='button'
-							className={`${styles.focusButton} ${isFocusActive ? styles.focusActiveButton : ''}`}
+							className={styles.focusButton}
 							onClick={handleStartFocus}
 						>
-							{isFocusActive
-								? 'Focus in progress'
-								: `Start focus · ${recommendation.durationMinutes} min`}
+							{`Start focus · ${recommendation.durationMinutes} min`}
 						</button>
 					</div>
 				</section>

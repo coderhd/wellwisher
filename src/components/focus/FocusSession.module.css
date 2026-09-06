@@ -1,0 +1,213 @@
+.panel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-4);
+	padding: var(--ww-space-6);
+	background: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.25);
+	border-radius: var(--ww-radius-md);
+	color: var(--ww-text);
+}
+
+.header {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.kicker {
+	margin: 0;
+	color: var(--ww-sage);
+	font-size: 0.8125rem;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.statusBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+	padding: 0.2rem 0.625rem;
+	background: rgba(159, 185, 170, 0.15);
+	border: 1px solid rgba(159, 185, 170, 0.3);
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-sage);
+	font-size: 0.8125rem;
+	font-weight: 500;
+}
+
+.statusBadgePaused {
+	background: rgba(223, 161, 141, 0.15);
+	border-color: rgba(223, 161, 141, 0.3);
+	color: var(--ww-peach);
+}
+
+.pulseDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--ww-sage);
+	animation: pulse 2s infinite ease-in-out;
+}
+
+.pulseDotPaused {
+	background: var(--ww-peach);
+	animation: none;
+}
+
+@keyframes pulse {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0.35;
+	}
+}
+
+.titleGroup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-1);
+}
+
+.title {
+	margin: 0;
+	font-family: var(--ww-font-serif);
+	font-size: 1.5rem;
+	font-weight: 400;
+	color: var(--ww-text);
+}
+
+.reason {
+	margin: 0;
+	color: var(--ww-muted);
+	font-size: 0.9375rem;
+	line-height: 1.45;
+}
+
+.timerSection {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	padding: var(--ww-space-4);
+	background: rgba(32, 42, 46, 0.6);
+	border-radius: var(--ww-radius-sm);
+}
+
+.timerReadouts {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	flex-wrap: wrap;
+	gap: var(--ww-space-2);
+}
+
+.mainTimer {
+	display: flex;
+	align-items: baseline;
+	gap: var(--ww-space-2);
+}
+
+.timerDigits {
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	font-size: 2.25rem;
+	font-weight: 600;
+	color: var(--ww-text);
+	letter-spacing: -0.02em;
+	line-height: 1;
+}
+
+.timerLabel {
+	color: var(--ww-muted);
+	font-size: 0.8125rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+}
+
+.subReadout {
+	display: flex;
+	gap: var(--ww-space-3);
+	font-size: 0.875rem;
+	color: var(--ww-muted);
+}
+
+.progressTrack {
+	width: 100%;
+	height: 6px;
+	background: rgba(255, 255, 255, 0.08);
+	border-radius: var(--ww-radius-pill);
+	overflow: hidden;
+}
+
+.progressBar {
+	height: 100%;
+	background: var(--ww-sage);
+	border-radius: var(--ww-radius-pill);
+	transition: width 0.3s ease;
+}
+
+.progressBarPaused {
+	background: var(--ww-peach);
+}
+
+.actionsRow {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-3);
+	flex-wrap: wrap;
+	margin-top: var(--ww-space-2);
+}
+
+.primaryButton {
+	padding: var(--ww-space-3) var(--ww-space-6);
+	background: var(--ww-peach);
+	color: var(--ww-cockpit);
+	border: none;
+	border-radius: var(--ww-radius-pill);
+	font-weight: 700;
+	font-size: 0.9375rem;
+	cursor: pointer;
+	transition: opacity 0.15s ease, transform 0.1s ease;
+}
+
+.primaryButton:hover {
+	opacity: 0.92;
+}
+
+.primaryButton:active {
+	transform: scale(0.98);
+}
+
+.secondaryButton {
+	padding: var(--ww-space-3) var(--ww-space-4);
+	background: transparent;
+	color: var(--ww-text);
+	border: 1px solid rgba(184, 193, 191, 0.3);
+	border-radius: var(--ww-radius-pill);
+	font-weight: 500;
+	font-size: 0.875rem;
+	cursor: pointer;
+	transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.secondaryButton:hover {
+	background: rgba(255, 255, 255, 0.06);
+	border-color: rgba(184, 193, 191, 0.5);
+}
+
+.dangerButton {
+	padding: var(--ww-space-3) var(--ww-space-4);
+	background: transparent;
+	color: var(--ww-muted);
+	border: none;
+	font-size: 0.875rem;
+	cursor: pointer;
+	margin-left: auto;
+	transition: color 0.15s ease;
+}
+
+.dangerButton:hover {
+	color: var(--ww-text);
+}

@@ -55,8 +55,47 @@ describe('TodaySurface component', () => {
 
 		await user.click(focusButton)
 
-		// After starting focus, button state or session indicators can reflect running/active state
-		expect(focusButton).toBeInTheDocument()
+		// After starting focus, active focus session controls are rendered
+		expect(
+			screen.getByRole('region', { name: /active focus session/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /pause/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /complete session/i }),
+		).toBeInTheDocument()
+	})
+
+	it('renders restorative completion state when focus session is completed', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<WellwisherProvider>
+				<TodaySurface />
+			</WellwisherProvider>,
+		)
+
+		const startButton = screen.getByRole('button', {
+			name: /start focus/i,
+		})
+		await user.click(startButton)
+
+		const completeButton = screen.getByRole('button', {
+			name: /complete session/i,
+		})
+		await user.click(completeButton)
+
+		// Renders TodayCompletion region with Rest now and Choose something else
+		expect(
+			screen.getByRole('region', { name: /today('s)? completion/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /rest now/i }),
+		).toBeInTheDocument()
+		expect(
+			screen.getByRole('button', { name: /choose something else/i }),
+		).toBeInTheDocument()
 	})
 
 	it('renders companion perspective message in editorial style', () => {
