@@ -1,0 +1,117 @@
+.dockWrapper {
+	position: fixed;
+	bottom: var(--ww-space-4);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 40;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	width: calc(100% - var(--ww-space-8));
+	max-width: 580px;
+	pointer-events: none;
+}
+
+.dockContainer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ww-space-3);
+	padding: var(--ww-space-2) var(--ww-space-4);
+	background: rgba(32, 42, 46, 0.92);
+	border: 1px solid rgba(255, 255, 255, 0.12);
+	border-radius: var(--ww-radius-pill);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+	backdrop-filter: blur(16px);
+	pointer-events: auto;
+	transition: all 0.2s ease;
+}
+
+.composerContainer {
+	width: 100%;
+	pointer-events: auto;
+}
+
+.dictateBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-2);
+	padding: var(--ww-space-2) var(--ww-space-4);
+	background: var(--ww-peach);
+	border: none;
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-cockpit);
+	font-size: 0.875rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.dictateBtn:hover {
+	transform: scale(1.02);
+}
+
+.dictateIcon {
+	display: inline-block;
+	width: 14px;
+	height: 14px;
+}
+
+.companionControls {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-1);
+}
+
+.controlBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--ww-space-1);
+	padding: var(--ww-space-2) var(--ww-space-3);
+	background: rgba(255, 255, 255, 0.06);
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-muted);
+	font-size: 0.75rem;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.controlBtn:hover {
+	background: rgba(255, 255, 255, 0.12);
+	color: var(--ww-text);
+}
+
+.controlBtnMuted {
+	color: var(--ww-peach);
+	border-color: rgba(223, 161, 141, 0.3);
+}
+
+.controlBtnActive {
+	background: rgba(159, 185, 170, 0.15);
+	color: var(--ww-sage);
+	border-color: var(--ww-sage);
+}
+
+@media (max-width: 480px) {
+	.dockWrapper {
+		bottom: var(--ww-space-3);
+		width: calc(100% - var(--ww-space-4));
+	}
+
+	.dockContainer {
+		padding: var(--ww-space-1) var(--ww-space-2);
+		gap: var(--ww-space-1);
+	}
+
+	.controlBtn {
+		padding: var(--ww-space-1) var(--ww-space-2);
+		font-size: 0.6875rem;
+	}
+
+	.dictateBtn {
+		padding: var(--ww-space-1) var(--ww-space-3);
+		font-size: 0.8125rem;
+	}
+}
