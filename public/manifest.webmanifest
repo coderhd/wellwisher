@@ -1,0 +1,9 @@
+{
+  "name": "Wellwisher",
+  "short_name": "Wellwisher",
+  "description": "A calm personal planning companion.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#F4F2EC",
+  "theme_color": "#202A2E"
+}
