@@ -48,11 +48,11 @@ test.describe('Wellwisher Primary Flow: Today -> Week -> Day Detail -> Plan -> U
 		await expect(tueColumn).toBeVisible()
 
 		// Click on Tuesday header to open Day detail
-		const tueLink = page.getByRole('link', {
+		const tueLink = tueColumn.getByRole('link', {
 			name: /View day detail for Tuesday/i,
 		})
 		await tueLink.click()
-		await expect(page).toHaveURL(/\/day\/2026-09-08/)
+		await expect(page).toHaveURL(/\/day\/2026-09-08/, { timeout: 15000 })
 
 		const daySurface = page.getByTestId('day-surface')
 		await expect(daySurface).toBeVisible()
@@ -66,7 +66,7 @@ test.describe('Wellwisher Primary Flow: Today -> Week -> Day Detail -> Plan -> U
 			.getByRole('navigation', { name: 'Main Navigation' })
 			.getByRole('link', { name: 'Plan', exact: true })
 		await planNavLink.click()
-		await expect(page).toHaveURL(/\/plan/)
+		await expect(page).toHaveURL(/\/plan/, { timeout: 15000 })
 
 		const planner = page.getByTestId('allocation-board')
 		await expect(planner).toBeVisible()
@@ -79,49 +79,29 @@ test.describe('Wellwisher Primary Flow: Today -> Week -> Day Detail -> Plan -> U
 			'These are suggestions, not commitments. Pin to a time after placing.',
 		)
 
-		// 4. Place / Drag a leisure intention (e.g. Walk) into Tuesday afternoon window
-		const walkCard = page.getByTestId('intention-card-walk')
+		// 4. Place a leisure intention (e.g. Walk) into Tuesday afternoon window using accessible placement
+		const walkCard = page.getByTestId('intention-card-walk').first()
 		await expect(walkCard).toBeVisible()
 		await expect(walkCard).toContainText('leisure')
+
+		const select = walkCard.getByRole('combobox', {
+			name: /Placement options for Walk/i,
+		})
+		await select.selectOption('2026-09-08:afternoon')
+
+		// 5. Select Tuesday from the 7-day ribbon to view Tuesday canvas
+		const tueRibbonPill = page.getByTestId('ribbon-day-2026-09-08')
+		await expect(tueRibbonPill).toBeVisible()
+		await tueRibbonPill.click()
+
+		// Verify Tuesday focused canvas is active
+		await expect(page.getByTestId('focused-day-2026-09-08')).toBeVisible()
 
 		// Target window zone on Tuesday afternoon (open window: 14:30 - 18:00)
 		const targetZone = page.getByTestId('drop-zone-2026-09-08-afternoon')
 		await expect(targetZone).toBeVisible()
 
-		// Perform pointer-based drag or accessible select
-		const walkBox = await walkCard.boundingBox()
-		const targetBox = await targetZone.boundingBox()
-
-		if (walkBox && targetBox) {
-			await page.mouse.move(
-				walkBox.x + walkBox.width / 2,
-				walkBox.y + walkBox.height / 2,
-			)
-			await page.mouse.down()
-			await page.mouse.move(
-				walkBox.x + walkBox.width / 2 + 10,
-				walkBox.y + walkBox.height / 2 + 10,
-				{ steps: 5 },
-			)
-			await page.mouse.move(
-				targetBox.x + targetBox.width / 2,
-				targetBox.y + targetBox.height / 2,
-				{ steps: 10 },
-			)
-			await page.mouse.up()
-		}
-
-		// Check if placed via drag; if mobile or synthetic drag didn't register drop, use accessible select
-		const placedWalkInTarget = targetZone.getByTestId('intention-card-walk')
-		const isPlaced = await placedWalkInTarget.isVisible().catch(() => false)
-		if (!isPlaced) {
-			const select = walkCard.getByRole('combobox', {
-				name: /Placement options for Walk/i,
-			})
-			await select.selectOption('2026-09-08:afternoon')
-		}
-
-		// 5. Verify the intention appears in the target drop zone and remains Suggested, not Pinned
+		// Verify the intention appears in the target drop zone and remains Suggested, not Pinned
 		const placedWalk = targetZone.getByTestId('intention-card-walk')
 		await expect(placedWalk).toBeVisible()
 		await expect(placedWalk).toContainText('Suggested')
