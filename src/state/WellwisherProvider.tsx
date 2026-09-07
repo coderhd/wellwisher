@@ -93,6 +93,12 @@ export function WellwisherProvider ({
 					date,
 					protectedCommitments: [],
 					allocations: [],
+					...(state.scheduleBounds
+						? {
+								availableStart: state.scheduleBounds.availableStart,
+								availableEnd: state.scheduleBounds.availableEnd,
+							}
+						: {}),
 				}
 			)
 		},

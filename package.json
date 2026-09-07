@@ -37,6 +37,6 @@
   },
   "eslintConfig": {
     "extends": ["next/core-web-vitals", "next/typescript"],
-    "ignorePatterns": ["next-env.d.ts", ".next/"]
+    "ignorePatterns": ["next-env.d.ts", ".next/", "out/"]
   }
 }

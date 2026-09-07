@@ -35,7 +35,12 @@ function isValidState (value: unknown): value is WellwisherState {
 		typeof candidate.focusSession === 'object' &&
 		candidate.focusSession !== null &&
 		typeof candidate.voicePreferences === 'object' &&
-		candidate.voicePreferences !== null
+		candidate.voicePreferences !== null &&
+		(candidate.scheduleBounds === undefined ||
+			(typeof candidate.scheduleBounds === 'object' &&
+				candidate.scheduleBounds !== null &&
+				typeof candidate.scheduleBounds.availableStart === 'string' &&
+				typeof candidate.scheduleBounds.availableEnd === 'string'))
 	)
 }
 
