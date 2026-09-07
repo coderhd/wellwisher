@@ -100,6 +100,7 @@ interface WindowZoneProps {
 	windowKey: 'morning' | 'afternoon' | 'evening'
 	label: string
 	timeRange: string
+	hasItems?: boolean
 	children?: React.ReactNode
 }
 
@@ -108,6 +109,7 @@ function WindowZone ({
 	windowKey,
 	label,
 	timeRange,
+	hasItems = true,
 	children,
 }: WindowZoneProps): React.JSX.Element {
 	const dropId = `${date}:${windowKey}`
@@ -127,7 +129,13 @@ function WindowZone ({
 				<span className='windowTimeRange'>{timeRange}</span>
 			</div>
 			<div className='windowContents'>
-				{children}
+				{hasItems ? (
+					children
+				) : (
+					<div className='windowEmpty'>
+						<span>Open breathing space</span>
+					</div>
+				)}
 			</div>
 		</div>
 	)
@@ -487,6 +495,7 @@ export function AllocationBoard ({
 											windowKey={win.key}
 											label={win.label}
 											timeRange={win.timeRange}
+											hasItems={windowProtected.length > 0 || windowAllocations.length > 0}
 										>
 											{/* Protected Commitments */}
 											{windowProtected.map((prot) => (

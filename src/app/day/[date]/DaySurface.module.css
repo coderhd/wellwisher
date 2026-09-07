@@ -17,22 +17,28 @@
 	display: inline-flex;
 	align-items: center;
 	gap: var(--ww-space-2);
-	font-size: 0.875rem;
+	padding: var(--ww-space-1) var(--ww-space-3);
+	border: 1px solid rgba(159, 185, 170, 0.24);
+	border-radius: var(--ww-radius-pill);
+	background: rgba(44, 57, 61, 0.5);
+	font-size: 0.8125rem;
 	font-weight: 500;
 	color: var(--ww-sage);
 	text-decoration: none;
-	transition: color 0.15s ease;
+	transition: all 0.15s ease;
 }
 
 .backLink:hover {
-	color: var(--ww-sage-surface);
-	text-decoration: underline;
+	border-color: var(--ww-sage);
+	background: rgba(159, 185, 170, 0.15);
+	color: var(--ww-text);
+	transform: translateX(-2px);
 }
 
 .backLink:focus-visible {
 	outline: 2px solid var(--ww-sage);
 	outline-offset: 2px;
-	border-radius: var(--ww-radius-sm);
+	border-radius: var(--ww-radius-pill);
 }
 
 .header {

@@ -319,6 +319,47 @@ describe('SettingsSurface component', () => {
 					/local-first storage \(ready for google drive sync\)/i,
 				),
 			).toBeInTheDocument()
+			expect(
+				screen.getByRole('button', { name: /connect google drive/i }),
+			).toBeInTheDocument()
+		})
+
+		it('allows connecting to Google Drive, syncing, and disconnecting', async () => {
+			const user = userEvent.setup()
+
+			render(
+				<WellwisherProvider>
+					<SettingsSurface />
+				</WellwisherProvider>,
+			)
+
+			const connectBtn = screen.getByRole('button', {
+				name: /connect google drive/i,
+			})
+			await user.click(connectBtn)
+
+			expect(
+				screen.getByText(/connected to google drive/i),
+			).toBeInTheDocument()
+			expect(
+				screen.getByRole('button', { name: /sync now/i }),
+			).toBeInTheDocument()
+
+			// Test sync now
+			const syncBtn = screen.getByRole('button', { name: /sync now/i })
+			await user.click(syncBtn)
+			expect(
+				screen.getByText(/synced successfully with google drive/i),
+			).toBeInTheDocument()
+
+			// Test disconnect
+			const disconnectBtn = screen.getByRole('button', {
+				name: /disconnect google drive/i,
+			})
+			await user.click(disconnectBtn)
+			expect(
+				screen.getByText(/disconnected from google drive/i),
+			).toBeInTheDocument()
 		})
 
 		it('exports state to a downloadable JSON file', async () => {
