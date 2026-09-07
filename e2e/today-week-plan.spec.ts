@@ -87,7 +87,9 @@ test.describe('Wellwisher Primary Flow: Today -> Week -> Day Detail -> Plan -> U
 		const select = walkCard.getByRole('combobox', {
 			name: /Placement options for Walk/i,
 		})
-		await select.selectOption('2026-09-08:afternoon')
+		await select.click()
+		const tueAfternoonOption = page.getByRole('option', { name: /tue.*afternoon/i })
+		await tueAfternoonOption.click()
 
 		// 5. Select Tuesday from the 7-day ribbon to view Tuesday canvas
 		const tueRibbonPill = page.getByTestId('ribbon-day-2026-09-08')
@@ -115,10 +117,14 @@ test.describe('Wellwisher Primary Flow: Today -> Week -> Day Detail -> Plan -> U
 		await expect(pinButton).toBeVisible()
 		await pinButton.click()
 
-		// Enter a start time (15:00) and confirm
-		const timeInput = placedWalk.getByLabel('Start time')
-		await expect(timeInput).toBeVisible()
-		await timeInput.fill('15:00')
+		// Enter a start time (15:00) using custom time picker and confirm
+		const timePickerTrigger = placedWalk.getByRole('button', { name: /start time/i })
+		await expect(timePickerTrigger).toBeVisible()
+		await timePickerTrigger.click()
+
+		await page.getByTestId('hour-15').click()
+		await page.getByTestId('minute-00').click()
+		await page.getByRole('button', { name: /done/i }).click()
 
 		const confirmPinButton = placedWalk.getByRole('button', {
 			name: 'Confirm Pin',

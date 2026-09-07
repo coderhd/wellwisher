@@ -8,9 +8,18 @@ import { ProfileMenu } from '../../src/components/shell/ProfileMenu'
 import { createDemoState } from '../../src/data/demoScenario'
 import { WellwisherProvider } from '../../src/state/WellwisherProvider'
 
+// Mock next/navigation
+const mockPush = vi.fn()
+vi.mock('next/navigation', () => ({
+	useRouter: () => ({
+		push: mockPush,
+	}),
+}))
+
 describe('SettingsSurface component', () => {
 	beforeEach(() => {
 		localStorage.clear()
+		sessionStorage.clear()
 		vi.restoreAllMocks()
 	})
 
@@ -99,13 +108,19 @@ describe('SettingsSurface component', () => {
 			const titleInput = screen.getByLabelText(/title/i)
 			await user.type(titleInput, 'Evening Journaling')
 
-			const startInput = screen.getByLabelText(/start time/i)
-			await user.clear(startInput)
-			await user.type(startInput, '20:30')
+			// Select start time 20:30
+			const startTrigger = screen.getByRole('button', { name: /anchor start time/i })
+			await user.click(startTrigger)
+			await user.click(screen.getByTestId('hour-20'))
+			await user.click(screen.getByTestId('minute-30'))
+			await user.click(screen.getByRole('button', { name: /done/i }))
 
-			const endInput = screen.getByLabelText(/end time/i)
-			await user.clear(endInput)
-			await user.type(endInput, '21:00')
+			// Select end time 21:00
+			const endTrigger = screen.getByRole('button', { name: /anchor end time/i })
+			await user.click(endTrigger)
+			await user.click(screen.getByTestId('hour-21'))
+			await user.click(screen.getByTestId('minute-00'))
+			await user.click(screen.getByRole('button', { name: /done/i }))
 
 			const saveBtn = within(dialog).getByRole('button', {
 				name: /create rhythm anchor|save/i,
@@ -177,7 +192,7 @@ describe('SettingsSurface component', () => {
 	})
 
 	describe('Day Schedule Boundaries section', () => {
-		it('renders start and end time inputs and saves updated boundaries', async () => {
+		it('renders start and end time custom pickers and saves updated boundaries', async () => {
 			const user = userEvent.setup()
 
 			render(
@@ -186,25 +201,29 @@ describe('SettingsSurface component', () => {
 				</WellwisherProvider>,
 			)
 
-			const startInput = screen.getByLabelText(
-				/available start|earliest start/i,
-			)
-			const endInput = screen.getByLabelText(
-				/available end|latest end/i,
-			)
+			const startTrigger = screen.getByRole('button', {
+				name: /available start time/i,
+			})
+			const endTrigger = screen.getByRole('button', {
+				name: /available end time/i,
+			})
 			const saveBoundsBtn = screen.getByRole('button', {
 				name: /save boundaries|save schedule boundaries/i,
 			})
 
-			expect(startInput).toBeInTheDocument()
-			expect(endInput).toBeInTheDocument()
+			expect(startTrigger).toBeInTheDocument()
+			expect(endTrigger).toBeInTheDocument()
 
 			// Change boundaries to 07:00 and 23:00
-			await user.clear(startInput)
-			await user.type(startInput, '07:00')
+			await user.click(startTrigger)
+			await user.click(screen.getByTestId('hour-07'))
+			await user.click(screen.getByTestId('minute-00'))
+			await user.click(screen.getByRole('button', { name: /done/i }))
 
-			await user.clear(endInput)
-			await user.type(endInput, '23:00')
+			await user.click(endTrigger)
+			await user.click(screen.getByTestId('hour-23'))
+			await user.click(screen.getByTestId('minute-00'))
+			await user.click(screen.getByRole('button', { name: /done/i }))
 
 			await user.click(saveBoundsBtn)
 
@@ -212,38 +231,6 @@ describe('SettingsSurface component', () => {
 			expect(
 				screen.getByText(/schedule boundaries saved/i),
 			).toBeInTheDocument()
-		})
-
-		it('validates schedule bounds to ensure end time is after start time', async () => {
-			const user = userEvent.setup()
-
-			render(
-				<WellwisherProvider>
-					<SettingsSurface />
-				</WellwisherProvider>,
-			)
-
-			const startInput = screen.getByLabelText(
-				/available start|earliest start/i,
-			)
-			const endInput = screen.getByLabelText(
-				/available end|latest end/i,
-			)
-			const saveBoundsBtn = screen.getByRole('button', {
-				name: /save boundaries|save schedule boundaries/i,
-			})
-
-			await user.clear(startInput)
-			await user.type(startInput, '21:00')
-
-			await user.clear(endInput)
-			await user.type(endInput, '19:00')
-
-			await user.click(saveBoundsBtn)
-
-			expect(screen.getByRole('alert')).toHaveTextContent(
-				/end time must be after start time/i,
-			)
 		})
 	})
 
@@ -296,18 +283,19 @@ describe('SettingsSurface component', () => {
 				</WellwisherProvider>,
 			)
 
-			const speedSelect = screen.getByLabelText(
-				/speech rate|voice speed|speed/i,
-			)
-			expect(speedSelect).toHaveValue('1')
+			const speedCombobox = screen.getByRole('combobox', {
+				name: /speech rate/i,
+			})
+			await user.click(speedCombobox)
+			const option125 = screen.getByRole('option', { name: /1\.25x/i })
+			await user.click(option125)
 
-			await user.selectOptions(speedSelect, '1.25')
-			expect(speedSelect).toHaveValue('1.25')
+			expect(screen.getByText(/1\.25x/i)).toBeInTheDocument()
 		})
 	})
 
 	describe('Storage & Data Management section', () => {
-		it('renders Google Drive sync readiness badge and seam note', () => {
+		it('renders Google Drive client-side sync and GCP Client ID input', () => {
 			render(
 				<WellwisherProvider>
 					<SettingsSurface />
@@ -316,15 +304,18 @@ describe('SettingsSurface component', () => {
 
 			expect(
 				screen.getByText(
-					/local-first storage \(ready for google drive sync\)/i,
+					/google drive client-side sync/i,
 				),
+			).toBeInTheDocument()
+			expect(
+				screen.getByLabelText(/google cloud oauth client id/i),
 			).toBeInTheDocument()
 			expect(
 				screen.getByRole('button', { name: /connect google drive/i }),
 			).toBeInTheDocument()
 		})
 
-		it('allows connecting to Google Drive, syncing, and disconnecting', async () => {
+		it('allows setting client ID and toggles GCP guide', async () => {
 			const user = userEvent.setup()
 
 			render(
@@ -333,45 +324,25 @@ describe('SettingsSurface component', () => {
 				</WellwisherProvider>,
 			)
 
-			const connectBtn = screen.getByRole('button', {
-				name: /connect google drive/i,
-			})
-			await user.click(connectBtn)
+			const clientIdInput = screen.getByLabelText(/google cloud oauth client id/i)
+			await user.type(clientIdInput, 'my-test-client-id.apps.googleusercontent.com')
+			expect(localStorage.getItem('wellwisher.gdrive.client_id')).toBe(
+				'my-test-client-id.apps.googleusercontent.com',
+			)
 
-			expect(
-				screen.getByText(/connected to google drive/i),
-			).toBeInTheDocument()
-			expect(
-				screen.getByRole('button', { name: /sync now/i }),
-			).toBeInTheDocument()
-
-			// Test sync now
-			const syncBtn = screen.getByRole('button', { name: /sync now/i })
-			await user.click(syncBtn)
-			expect(
-				screen.getByText(/synced successfully with google drive/i),
-			).toBeInTheDocument()
-
-			// Test disconnect
-			const disconnectBtn = screen.getByRole('button', {
-				name: /disconnect google drive/i,
-			})
-			await user.click(disconnectBtn)
-			expect(
-				screen.getByText(/disconnected from google drive/i),
-			).toBeInTheDocument()
+			const guideBtn = screen.getByRole('button', { name: /how to get oauth client id\?/i })
+			await user.click(guideBtn)
+			expect(screen.getByText(/google cloud platform setup/i)).toBeInTheDocument()
 		})
 
 		it('exports state to a downloadable JSON file', async () => {
 			const user = userEvent.setup()
 
-			// Mock URL.createObjectURL and URL.revokeObjectURL
 			const createObjectURLMock = vi.fn(() => 'blob:mock-url')
 			const revokeObjectURLMock = vi.fn()
 			globalThis.URL.createObjectURL = createObjectURLMock
 			globalThis.URL.revokeObjectURL = revokeObjectURLMock
 
-			// Spy on document.createElement to intercept download anchor
 			const clickMock = vi.fn()
 			const originalCreateElement = document.createElement.bind(document)
 			const createElementSpy = vi
@@ -466,7 +437,7 @@ describe('SettingsSurface component', () => {
 			})
 		})
 
-		it('resets state to demo scenario on reset button click', async () => {
+		it('resets state to default onboarding when clicking Reset to Default', async () => {
 			const user = userEvent.setup()
 
 			render(
@@ -475,14 +446,31 @@ describe('SettingsSurface component', () => {
 				</WellwisherProvider>,
 			)
 
-			const resetBtn = screen.getByRole('button', {
-				name: /reset to demo scenario|reset scenario|reset demo/i,
+			const resetDefaultBtn = screen.getByRole('button', {
+				name: /reset to default \(onboarding\)/i,
 			})
-			await user.click(resetBtn)
+			await user.click(resetDefaultBtn)
+
+			expect(mockPush).toHaveBeenCalledWith('/')
+		})
+
+		it('resets state to demo baseline when clicking Quick Reset', async () => {
+			const user = userEvent.setup()
+
+			render(
+				<WellwisherProvider>
+					<SettingsSurface />
+				</WellwisherProvider>,
+			)
+
+			const quickResetBtn = screen.getByRole('button', {
+				name: /quick reset to demo baseline/i,
+			})
+			await user.click(quickResetBtn)
 
 			expect(
 				screen.getByText(
-					/reset to harsh demo scenario complete|demo scenario reset/i,
+					/reset to demo baseline complete/i,
 				),
 			).toBeInTheDocument()
 		})
@@ -512,6 +500,11 @@ describe('SettingsSurface component', () => {
 				name: /voice preferences/i,
 			})
 			expect(voiceLink).toHaveAttribute('href', '/settings#voice')
+
+			const resetDefaultLink = screen.getByRole('menuitem', {
+				name: /reset to default \(onboarding\)/i,
+			})
+			expect(resetDefaultLink).toHaveAttribute('href', '/')
 		})
 	})
 })

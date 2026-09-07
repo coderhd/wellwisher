@@ -11,6 +11,7 @@ import type {
 	FlexibleIntention,
 	ItemKind,
 } from '../../domain/planning/types'
+import { CustomSelect } from '../ui/CustomSelect'
 import styles from './IntentionModal.module.css'
 
 export interface IntentionModalProps {
@@ -211,15 +212,16 @@ export function IntentionModal ({
 							<label htmlFor='intention-kind' className={styles.label}>
 								Kind
 							</label>
-							<select
+							<CustomSelect
 								id='intention-kind'
-								className={styles.select}
 								value={kind}
-								onChange={(e) => setKind(e.target.value as ItemKind)}
-							>
-								<option value='work'>Work</option>
-								<option value='leisure'>Leisure</option>
-							</select>
+								ariaLabel='Intention Kind'
+								onChange={(val) => setKind(val as ItemKind)}
+								options={[
+									{ value: 'work', label: 'Work' },
+									{ value: 'leisure', label: 'Leisure' },
+								]}
+							/>
 						</div>
 
 						<div className={styles.fieldGroup}>
@@ -229,21 +231,20 @@ export function IntentionModal ({
 							>
 								Duration
 							</label>
-							<select
+							<CustomSelect
 								id='intention-duration'
-								className={styles.select}
-								value={durationMinutes}
-								onChange={(e) =>
-									setDurationMinutes(Number(e.target.value))
-								}
-							>
-								<option value='15'>15 min</option>
-								<option value='30'>30 min</option>
-								<option value='45'>45 min</option>
-								<option value='60'>60 min (1 hr)</option>
-								<option value='90'>90 min (1.5 hr)</option>
-								<option value='120'>120 min (2 hr)</option>
-							</select>
+								value={String(durationMinutes)}
+								ariaLabel='Intention Duration'
+								onChange={(val) => setDurationMinutes(Number(val))}
+								options={[
+									{ value: '15', label: '15 min' },
+									{ value: '30', label: '30 min' },
+									{ value: '45', label: '45 min' },
+									{ value: '60', label: '60 min (1 hr)' },
+									{ value: '90', label: '90 min (1.5 hr)' },
+									{ value: '120', label: '120 min (2 hr)' },
+								]}
+							/>
 						</div>
 					</div>
 
@@ -255,25 +256,27 @@ export function IntentionModal ({
 							>
 								Preferred Window
 							</label>
-							<select
+							<CustomSelect
 								id='intention-window'
-								className={styles.select}
 								value={preferredWindow}
-								onChange={(e) =>
+								ariaLabel='Preferred Window'
+								placeholder='Any time'
+								onChange={(val) =>
 									setPreferredWindow(
-										e.target.value as
+										val as
 											| 'morning'
 											| 'afternoon'
 											| 'evening'
 											| '',
 									)
 								}
-							>
-								<option value=''>Any time</option>
-								<option value='morning'>Morning</option>
-								<option value='afternoon'>Afternoon</option>
-								<option value='evening'>Evening</option>
-							</select>
+								options={[
+									{ value: '', label: 'Any time' },
+									{ value: 'morning', label: 'Morning' },
+									{ value: 'afternoon', label: 'Afternoon' },
+									{ value: 'evening', label: 'Evening' },
+								]}
+							/>
 						</div>
 
 						<div className={styles.fieldGroup}>
@@ -283,18 +286,19 @@ export function IntentionModal ({
 							>
 								Priority
 							</label>
-							<select
+							<CustomSelect
 								id='intention-priority'
-								className={styles.select}
-								value={priority}
-								onChange={(e) =>
-									setPriority(Number(e.target.value) as 1 | 2 | 3)
+								value={String(priority)}
+								ariaLabel='Intention Priority'
+								onChange={(val) =>
+									setPriority(Number(val) as 1 | 2 | 3)
 								}
-							>
-								<option value='1'>1 (Highest)</option>
-								<option value='2'>2 (Normal)</option>
-								<option value='3'>3 (Lowest)</option>
-							</select>
+								options={[
+									{ value: '1', label: '1 (Highest)' },
+									{ value: '2', label: '2 (Normal)' },
+									{ value: '3', label: '3 (Lowest)' },
+								]}
+							/>
 						</div>
 					</div>
 

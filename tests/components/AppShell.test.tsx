@@ -164,11 +164,11 @@ describe('AppShell component', () => {
 		await user.click(profileButton)
 
 		const resetOption = screen.getByRole('menuitem', {
-			name: /reset demo scenario/i,
+			name: /quick reset to demo baseline/i,
 		})
 		expect(resetOption).toBeInTheDocument()
 
-		// Click reset demo scenario
+		// Click quick reset demo scenario
 		await user.click(resetOption)
 
 		// Menu should close

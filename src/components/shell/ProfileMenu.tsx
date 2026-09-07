@@ -95,13 +95,25 @@ export function ProfileMenu (): React.JSX.Element {
 
 					<div className={styles.menuDivider} />
 
+					<Link
+						href='/'
+						role='menuitem'
+						className={styles.menuItem}
+						onClick={() => {
+							clearState()
+							handleClose()
+						}}
+					>
+						Reset to default (Onboarding)
+					</Link>
+
 					<button
 						type='button'
 						role='menuitem'
 						className={`${styles.menuItem} ${styles.menuItemSubtle}`}
 						onClick={handleResetDemo}
 					>
-						Reset demo scenario
+						Quick reset to demo baseline
 					</button>
 				</div>
 			)}

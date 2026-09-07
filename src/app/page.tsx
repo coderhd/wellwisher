@@ -1,14 +1,8 @@
-import Link from 'next/link'
+'use client'
+
 import React from 'react'
+import { OnboardingFlow } from '../components/onboarding/OnboardingFlow'
 
 export default function Home (): React.JSX.Element {
-	return (
-		<main className='ww-home'>
-			<p className='ww-kicker'>Wellwisher</p>
-			<h1>Make room for what matters.</h1>
-			<Link className='ww-link' href='/today'>
-				Today
-			</Link>
-		</main>
-	)
+	return <OnboardingFlow />
 }

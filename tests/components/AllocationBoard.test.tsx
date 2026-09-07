@@ -565,14 +565,16 @@ describe('AllocationBoard Option C (7-Day Ribbon + Focused Single-Day Canvas)', 
 			/>,
 		)
 
-		// Find the accessible menu or select for "Trending learning"
+		// Find the accessible menu for "Trending learning"
 		const suggestControl = screen.getByRole('combobox', {
 			name: /suggest trending learning on|placement options for trending learning/i,
 		})
 		expect(suggestControl).toBeInTheDocument()
 
-		// Select Tuesday evening
-		await user.selectOptions(suggestControl, '2026-09-08:evening')
+		// Click to open dropdown and select Tuesday evening
+		await user.click(suggestControl)
+		const tueEveningOption = screen.getByRole('option', { name: /tue.*evening/i })
+		await user.click(tueEveningOption)
 
 		expect(onSuggest).toHaveBeenCalledWith('trending-learning', {
 			date: '2026-09-08',
@@ -604,13 +606,14 @@ describe('AllocationBoard Option C (7-Day Ribbon + Focused Single-Day Canvas)', 
 
 		await user.click(pinButton)
 
-		// Time input is revealed and has type="time"
-		const timeInput = screen.getByLabelText(/start time|pin time/i)
-		expect(timeInput).toBeInTheDocument()
-		expect(timeInput).toHaveAttribute('type', 'time')
+		// Open CustomTimePicker popover
+		const timePickerTrigger = screen.getByRole('button', { name: /start time|pin time/i })
+		expect(timePickerTrigger).toBeInTheDocument()
 
-		await user.clear(timeInput)
-		await user.type(timeInput, '09:15')
+		await user.click(timePickerTrigger)
+		await user.click(screen.getByTestId('hour-09'))
+		await user.click(screen.getByTestId('minute-15'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
 		const confirmPinButton = screen.getByRole('button', {
 			name: /confirm pin|save pin|pin/i,
@@ -620,7 +623,7 @@ describe('AllocationBoard Option C (7-Day Ribbon + Focused Single-Day Canvas)', 
 		expect(onPin).toHaveBeenCalledWith('alloc-ai-mon', '09:15')
 	})
 
-	it('validates HH:mm time format before invoking onPin', async () => {
+	it('allows selecting time via custom picker before invoking onPin', async () => {
 		const user = userEvent.setup()
 		const onPin = vi.fn()
 
@@ -644,21 +647,15 @@ describe('AllocationBoard Option C (7-Day Ribbon + Focused Single-Day Canvas)', 
 		})
 		await user.click(pinButton)
 
-		const timeInput = screen.getByLabelText(/start time/i)
-		expect(timeInput).toHaveAttribute('type', 'time')
+		const timePickerTrigger = screen.getByRole('button', { name: /start time/i })
+		await user.click(timePickerTrigger)
+		await user.click(screen.getByTestId('hour-14'))
+		await user.click(screen.getByTestId('minute-30'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		// Attempt to submit invalid time
-		await user.clear(timeInput)
-		await user.type(timeInput, 'invalid')
 		const confirmPinButton = screen.getByRole('button', {
 			name: /confirm pin/i,
 		})
-		await user.click(confirmPinButton)
-		expect(onPin).not.toHaveBeenCalled()
-
-		// Submit valid time
-		await user.clear(timeInput)
-		await user.type(timeInput, '14:30')
 		await user.click(confirmPinButton)
 		expect(onPin).toHaveBeenCalledWith('alloc-test', '14:30')
 	})

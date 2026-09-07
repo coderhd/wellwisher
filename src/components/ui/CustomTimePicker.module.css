@@ -1,0 +1,161 @@
+.container {
+	position: relative;
+	display: inline-flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.trigger {
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ww-space-2);
+	width: 100%;
+	padding: var(--ww-space-2) var(--ww-space-3);
+	background-color: var(--ww-cockpit);
+	border: 1px solid rgba(159, 185, 170, 0.25);
+	border-radius: var(--ww-radius-sm);
+	color: var(--ww-text);
+	font-family: var(--ww-font-sans);
+	font-size: 0.9375rem;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.trigger:hover:not(:disabled) {
+	border-color: var(--ww-sage);
+	background-color: rgba(44, 57, 61, 0.6);
+}
+
+.trigger:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 1px;
+}
+
+.trigger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.triggerOpen {
+	border-color: var(--ww-sage);
+	box-shadow: 0 0 0 1px var(--ww-sage);
+}
+
+.clockIcon {
+	display: flex;
+	align-items: center;
+	color: var(--ww-sage);
+	flex-shrink: 0;
+}
+
+.popover {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	z-index: 100;
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	padding: var(--ww-space-3);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.3);
+	border-radius: var(--ww-radius-md);
+	box-shadow: 0 16px 40px rgba(0, 0, 0, 0.6);
+	min-width: 240px;
+}
+
+.columnsWrapper {
+	display: flex;
+	gap: var(--ww-space-3);
+	justify-content: center;
+}
+
+.column {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-height: 180px;
+	overflow-y: auto;
+	padding-right: 2px;
+	scrollbar-width: thin;
+}
+
+.column::-webkit-scrollbar {
+	width: 4px;
+}
+
+.column::-webkit-scrollbar-thumb {
+	border-radius: 4px;
+	background: rgba(159, 185, 170, 0.3);
+}
+
+.columnHeader {
+	font-size: 0.6875rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	color: var(--ww-sage);
+	text-transform: uppercase;
+	text-align: center;
+	margin-bottom: 4px;
+	position: sticky;
+	top: 0;
+	background-color: var(--ww-panel);
+	padding: 2px 0;
+}
+
+.timePill {
+	padding: 4px 10px;
+	background-color: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--ww-radius-sm);
+	color: var(--ww-muted);
+	font-family: var(--ww-font-sans);
+	font-size: 0.8125rem;
+	font-variant-numeric: tabular-nums;
+	cursor: pointer;
+	transition: all 0.1s ease;
+}
+
+.timePill:hover {
+	background-color: rgba(159, 185, 170, 0.15);
+	color: var(--ww-text);
+}
+
+.timePillSelected {
+	background-color: var(--ww-sage);
+	color: var(--ww-cockpit);
+	font-weight: 700;
+}
+
+.timePillSelected:hover {
+	background-color: var(--ww-sage-surface);
+	color: var(--ww-cockpit);
+}
+
+.footerRow {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding-top: var(--ww-space-2);
+	border-top: 1px solid rgba(159, 185, 170, 0.15);
+}
+
+.doneButton {
+	padding: 3px 12px;
+	background-color: rgba(159, 185, 170, 0.2);
+	border: 1px solid var(--ww-sage);
+	border-radius: var(--ww-radius-pill);
+	color: var(--ww-sage);
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.doneButton:hover {
+	background-color: var(--ww-sage);
+	color: var(--ww-cockpit);
+}

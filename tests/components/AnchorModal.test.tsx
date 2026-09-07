@@ -84,13 +84,19 @@ describe('AnchorModal', () => {
 		const titleInput = screen.getByLabelText(/title/i)
 		await user.type(titleInput, 'Evening Gym')
 
-		const startInput = screen.getByLabelText(/start time/i)
-		await user.clear(startInput)
-		await user.type(startInput, '18:00')
+		// Set Start Time to 18:00
+		const startTrigger = screen.getByRole('button', { name: /anchor start time/i })
+		await user.click(startTrigger)
+		await user.click(screen.getByTestId('hour-18'))
+		await user.click(screen.getByTestId('minute-00'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		const endInput = screen.getByLabelText(/end time/i)
-		await user.clear(endInput)
-		await user.type(endInput, '17:00')
+		// Set End Time to 17:00 (before start time)
+		const endTrigger = screen.getByRole('button', { name: /anchor end time/i })
+		await user.click(endTrigger)
+		await user.click(screen.getByTestId('hour-17'))
+		await user.click(screen.getByTestId('minute-00'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
 		const submitBtn = screen.getByRole('button', {
 			name: /create rhythm anchor|save/i,
@@ -119,16 +125,24 @@ describe('AnchorModal', () => {
 		const titleInput = screen.getByLabelText(/title/i)
 		await user.type(titleInput, 'Morning Walk')
 
-		const startInput = screen.getByLabelText(/start time/i)
-		await user.clear(startInput)
-		await user.type(startInput, '06:30')
+		// Set Start Time to 06:30
+		const startTrigger = screen.getByRole('button', { name: /anchor start time/i })
+		await user.click(startTrigger)
+		await user.click(screen.getByTestId('hour-06'))
+		await user.click(screen.getByTestId('minute-30'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		const endInput = screen.getByLabelText(/end time/i)
-		await user.clear(endInput)
-		await user.type(endInput, '07:30')
+		// Set End Time to 07:30
+		const endTrigger = screen.getByRole('button', { name: /anchor end time/i })
+		await user.click(endTrigger)
+		await user.click(screen.getByTestId('hour-07'))
+		await user.click(screen.getByTestId('minute-30'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		const repeatSelect = screen.getByLabelText(/repeat pattern|repeat/i)
-		await user.selectOptions(repeatSelect, 'daily')
+		// Daily is default, but let's select it via CustomSelect
+		const repeatCombobox = screen.getByRole('combobox', { name: /repeat pattern/i })
+		await user.click(repeatCombobox)
+		await user.click(screen.getByRole('option', { name: /daily/i }))
 
 		const submitBtn = screen.getByRole('button', {
 			name: /create rhythm anchor|save/i,
@@ -162,16 +176,24 @@ describe('AnchorModal', () => {
 		const titleInput = screen.getByLabelText(/title/i)
 		await user.type(titleInput, 'Weekend Yoga')
 
-		const startInput = screen.getByLabelText(/start time/i)
-		await user.clear(startInput)
-		await user.type(startInput, '08:00')
+		// Set Start Time to 08:00
+		const startTrigger = screen.getByRole('button', { name: /anchor start time/i })
+		await user.click(startTrigger)
+		await user.click(screen.getByTestId('hour-08'))
+		await user.click(screen.getByTestId('minute-00'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		const endInput = screen.getByLabelText(/end time/i)
-		await user.clear(endInput)
-		await user.type(endInput, '09:00')
+		// Set End Time to 09:00
+		const endTrigger = screen.getByRole('button', { name: /anchor end time/i })
+		await user.click(endTrigger)
+		await user.click(screen.getByTestId('hour-09'))
+		await user.click(screen.getByTestId('minute-00'))
+		await user.click(screen.getByRole('button', { name: /done/i }))
 
-		const repeatSelect = screen.getByLabelText(/repeat pattern|repeat/i)
-		await user.selectOptions(repeatSelect, 'selected-days')
+		// Select selected-days
+		const repeatCombobox = screen.getByRole('combobox', { name: /repeat pattern/i })
+		await user.click(repeatCombobox)
+		await user.click(screen.getByRole('option', { name: /selected days/i }))
 
 		// Select Saturday (6) and Sunday (0)
 		const satCheckbox = screen.getByLabelText(/saturday|sat/i)

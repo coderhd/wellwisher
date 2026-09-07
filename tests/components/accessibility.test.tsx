@@ -164,7 +164,9 @@ describe('Accessibility & Responsive Hardening', () => {
 			expect(firstSelect).toBeInTheDocument()
 
 			// Choose a placement option via keyboard selection
-			await user.selectOptions(firstSelect, '2026-09-08:morning')
+			await user.click(firstSelect)
+			const optionToSelect = screen.getAllByRole('option')[1]
+			await user.click(optionToSelect)
 
 			// Verify allocation button actions (Arrange, Undo) are keyboard reachable
 			const arrangeBtn = screen.getByRole('button', {

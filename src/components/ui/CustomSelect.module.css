@@ -1,0 +1,125 @@
+.container {
+	position: relative;
+	display: inline-flex;
+	flex-direction: column;
+	width: 100%;
+}
+
+.trigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ww-space-2);
+	width: 100%;
+	padding: var(--ww-space-2) var(--ww-space-3);
+	background-color: var(--ww-cockpit);
+	border: 1px solid rgba(159, 185, 170, 0.25);
+	border-radius: var(--ww-radius-sm);
+	color: var(--ww-text);
+	font-family: var(--ww-font-sans);
+	font-size: 0.875rem;
+	font-weight: 500;
+	cursor: pointer;
+	text-align: left;
+	transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.trigger:hover:not(:disabled) {
+	border-color: var(--ww-sage);
+	background-color: rgba(44, 57, 61, 0.6);
+}
+
+.trigger:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 1px;
+}
+
+.trigger:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.triggerOpen {
+	border-color: var(--ww-sage);
+	box-shadow: 0 0 0 1px var(--ww-sage);
+}
+
+.labelWrapper {
+	flex: 1;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.placeholder {
+	color: var(--ww-muted);
+}
+
+.chevron {
+	display: flex;
+	align-items: center;
+	color: var(--ww-sage);
+	transition: transform 0.2s ease;
+	flex-shrink: 0;
+}
+
+.chevronOpen {
+	transform: rotate(180deg);
+}
+
+.dropdown {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 100;
+	width: 100%;
+	min-width: 180px;
+	max-height: 240px;
+	overflow-y: auto;
+	padding: var(--ww-space-1);
+	background-color: var(--ww-panel);
+	border: 1px solid rgba(159, 185, 170, 0.3);
+	border-radius: var(--ww-radius-md);
+	box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+	list-style: none;
+	margin: 0;
+	scrollbar-width: thin;
+}
+
+.dropdown::-webkit-scrollbar {
+	width: 6px;
+}
+
+.dropdown::-webkit-scrollbar-thumb {
+	border-radius: 4px;
+	background: rgba(159, 185, 170, 0.3);
+}
+
+.option {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--ww-space-2) var(--ww-space-3);
+	border-radius: var(--ww-radius-sm);
+	color: var(--ww-text);
+	font-size: 0.875rem;
+	cursor: pointer;
+	transition: background-color 0.1s ease;
+}
+
+.option:hover,
+.optionHighlighted {
+	background-color: rgba(159, 185, 170, 0.15);
+	color: var(--ww-text);
+}
+
+.optionSelected {
+	background-color: rgba(159, 185, 170, 0.22);
+	color: var(--ww-sage);
+	font-weight: 600;
+}
+
+.checkIcon {
+	margin-left: var(--ww-space-2);
+	color: var(--ww-sage);
+}

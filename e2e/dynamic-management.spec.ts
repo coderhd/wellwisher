@@ -48,17 +48,21 @@ test.describe('Dynamic Management & Responsive Option C Planner E2E', () => {
 		const titleInput = intentionModal.getByLabel('Title')
 		await titleInput.fill('Architectural Blueprint')
 
-		const kindSelect = intentionModal.getByLabel('Kind')
-		await kindSelect.selectOption('work')
+		// CustomSelect for Kind
+		await intentionModal.getByRole('combobox', { name: /intention kind|kind/i }).click()
+		await page.getByRole('option', { name: 'Work', exact: true }).click()
 
-		const durationSelect = intentionModal.getByLabel('Duration')
-		await durationSelect.selectOption('60')
+		// CustomSelect for Duration
+		await intentionModal.getByRole('combobox', { name: /intention duration|duration/i }).click()
+		await page.getByRole('option', { name: /60 min/i }).click()
 
-		const windowSelect = intentionModal.getByLabel('Preferred Window')
-		await windowSelect.selectOption('morning')
+		// CustomSelect for Preferred Window
+		await intentionModal.getByRole('combobox', { name: /preferred window|window/i }).click()
+		await page.getByRole('option', { name: 'Morning', exact: true }).click()
 
-		const prioritySelect = intentionModal.getByLabel('Priority')
-		await prioritySelect.selectOption('1')
+		// CustomSelect for Priority
+		await intentionModal.getByRole('combobox', { name: /intention priority|priority/i }).click()
+		await page.getByRole('option', { name: /1 \(highest\)/i }).click()
 
 		const createButton = intentionModal.getByRole('button', {
 			name: 'Create Intention',
@@ -87,7 +91,8 @@ test.describe('Dynamic Management & Responsive Option C Planner E2E', () => {
 		const placeSelect = newIntentionCard.getByRole('combobox', {
 			name: /Placement options for Architectural Blueprint/i,
 		})
-		await placeSelect.selectOption('2026-09-07:morning')
+		await placeSelect.click()
+		await page.getByRole('option', { name: /mon.*morning/i }).click()
 
 		// 6. Verify intention is now suggested inside Monday morning drop zone
 		const monMorningZone = page.getByTestId('drop-zone-2026-09-07-morning')
@@ -175,11 +180,17 @@ test.describe('Dynamic Management & Responsive Option C Planner E2E', () => {
 			anchorModal.getByRole('heading', { level: 2 }),
 		).toHaveText('Edit Rhythm Anchor')
 
-		const startTimeInput = anchorModal.getByLabel('Start Time')
-		await startTimeInput.fill('07:00')
+		const startTimeBtn = anchorModal.getByRole('button', { name: /anchor start time/i })
+		await startTimeBtn.click()
+		await page.getByTestId('hour-07').click()
+		await page.getByTestId('minute-00').click()
+		await page.getByRole('button', { name: /done/i }).click()
 
-		const endTimeInput = anchorModal.getByLabel('End Time')
-		await endTimeInput.fill('08:00')
+		const endTimeBtn = anchorModal.getByRole('button', { name: /anchor end time/i })
+		await endTimeBtn.click()
+		await page.getByTestId('hour-08').click()
+		await page.getByTestId('minute-00').click()
+		await page.getByRole('button', { name: /done/i }).click()
 
 		const saveAnchorButton = anchorModal.getByRole('button', {
 			name: 'Save Changes',
@@ -195,11 +206,17 @@ test.describe('Dynamic Management & Responsive Option C Planner E2E', () => {
 		await expect(updatedAnchorCard).toContainText('07:00 – 08:00')
 
 		// 4. Edit Day Schedule Boundaries
-		const startBoundInput = page.getByLabel('Available Start (Earliest)')
-		await startBoundInput.fill('07:00')
+		const startBoundBtn = page.getByRole('button', { name: /available start time/i })
+		await startBoundBtn.click()
+		await page.getByTestId('hour-07').click()
+		await page.getByTestId('minute-00').click()
+		await page.getByRole('button', { name: /done/i }).click()
 
-		const endBoundInput = page.getByLabel('Available End (Latest)')
-		await endBoundInput.fill('23:00')
+		const endBoundBtn = page.getByRole('button', { name: /available end time/i })
+		await endBoundBtn.click()
+		await page.getByTestId('hour-23').click()
+		await page.getByTestId('minute-00').click()
+		await page.getByRole('button', { name: /done/i }).click()
 
 		const saveBoundsButton = page.getByRole('button', {
 			name: 'Save Boundaries',

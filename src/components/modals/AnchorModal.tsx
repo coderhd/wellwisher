@@ -12,6 +12,8 @@ import type {
 	RepeatPattern,
 	RhythmAnchor,
 } from '../../domain/planning/types'
+import { CustomSelect } from '../ui/CustomSelect'
+import { CustomTimePicker } from '../ui/CustomTimePicker'
 import styles from './AnchorModal.module.css'
 
 export interface AnchorModalProps {
@@ -269,12 +271,11 @@ export function AnchorModal ({
 							>
 								Start Time
 							</label>
-							<input
+							<CustomTimePicker
 								id='anchor-start-time'
-								type='time'
-								className={styles.input}
 								value={startTime}
-								onChange={(e) => setStartTime(e.target.value)}
+								ariaLabel='Anchor Start Time'
+								onChange={(val) => setStartTime(val)}
 							/>
 						</div>
 
@@ -285,12 +286,11 @@ export function AnchorModal ({
 							>
 								End Time
 							</label>
-							<input
+							<CustomTimePicker
 								id='anchor-end-time'
-								type='time'
-								className={styles.input}
 								value={endTime}
-								onChange={(e) => setEndTime(e.target.value)}
+								ariaLabel='Anchor End Time'
+								onChange={(val) => setEndTime(val)}
 							/>
 						</div>
 					</div>
@@ -299,23 +299,24 @@ export function AnchorModal ({
 						<label htmlFor='anchor-repeat' className={styles.label}>
 							Repeat Pattern
 						</label>
-						<select
+						<CustomSelect
 							id='anchor-repeat'
-							className={styles.select}
 							value={repeatType}
-							onChange={(e) =>
+							ariaLabel='Repeat Pattern'
+							onChange={(val) =>
 								setRepeatType(
-									e.target.value as
+									val as
 										| 'daily'
 										| 'weekdays'
 										| 'selected-days',
 								)
 							}
-						>
-							<option value='daily'>Daily (Every day)</option>
-							<option value='weekdays'>Weekdays (Mon–Fri)</option>
-							<option value='selected-days'>Selected days</option>
-						</select>
+							options={[
+								{ value: 'daily', label: 'Daily (Every day)' },
+								{ value: 'weekdays', label: 'Weekdays (Mon–Fri)' },
+								{ value: 'selected-days', label: 'Selected days' },
+							]}
+						/>
 					</div>
 
 					{repeatType === 'selected-days' && (

@@ -6,12 +6,20 @@ import React, {
 	useRef,
 	useState,
 } from 'react'
+import { useRouter } from 'next/navigation'
 import { z } from 'zod'
 
 import { AnchorModal } from '../../components/modals/AnchorModal'
+import { CustomSelect } from '../../components/ui/CustomSelect'
+import { CustomTimePicker } from '../../components/ui/CustomTimePicker'
 import { createDemoState } from '../../data/demoScenario'
 import { parseClockTime } from '../../domain/planning/time'
 import type { RhythmAnchor } from '../../domain/planning/types'
+import {
+	downloadStateFromDrive,
+	requestGoogleDriveToken,
+	uploadStateToDrive,
+} from '../../services/googleDriveClient'
 import { clearState } from '../../state/persistence'
 import type { WellwisherState } from '../../state/reducer'
 import { useWellwisher } from '../../state/WellwisherProvider'
@@ -139,6 +147,7 @@ function formatRepeatReadable (repeat: RhythmAnchor['repeat']): string {
 }
 
 export function SettingsSurface (): React.JSX.Element {
+	const router = useRouter()
 	const { state, dispatch } = useWellwisher()
 
 	// Anchor modal state
@@ -158,6 +167,18 @@ export function SettingsSurface (): React.JSX.Element {
 	const [boundsError, setBoundsError] = useState<string | null>(null)
 
 	// Google Drive Sync state
+	const [googleClientId, setGoogleClientId] = useState<string>(() => {
+		if (typeof window !== 'undefined') {
+			return localStorage.getItem('wellwisher.gdrive.client_id') || ''
+		}
+		return ''
+	})
+	const [googleAccessToken, setGoogleAccessToken] = useState<string | null>(() => {
+		if (typeof window !== 'undefined') {
+			return sessionStorage.getItem('wellwisher.gdrive.access_token')
+		}
+		return null
+	})
 	const [isDriveConnected, setIsDriveConnected] = useState<boolean>(() => {
 		if (typeof window !== 'undefined') {
 			return localStorage.getItem('wellwisher.gdrive.connected') === 'true'
@@ -176,42 +197,107 @@ export function SettingsSurface (): React.JSX.Element {
 		}
 		return null
 	})
+	const [isSyncing, setIsSyncing] = useState<boolean>(false)
+	const [showGcpGuide, setShowGcpGuide] = useState<boolean>(false)
 
 	// Storage & Data state
 	const [storageStatus, setStorageStatus] = useState<string | null>(null)
 	const [storageError, setStorageError] = useState<string | null>(null)
 	const fileInputRef = useRef<HTMLInputElement>(null)
 
-	const handleConnectGoogleDrive = useCallback(() => {
-		setIsDriveConnected(true)
-		const now = new Date().toISOString()
-		setLastSyncedAt(now)
+	const handleSaveClientId = useCallback((val: string) => {
+		setGoogleClientId(val)
 		if (typeof window !== 'undefined') {
-			localStorage.setItem('wellwisher.gdrive.connected', 'true')
-			localStorage.setItem('wellwisher.gdrive.last_synced', now)
+			localStorage.setItem('wellwisher.gdrive.client_id', val.trim())
 		}
-		setStorageStatus(
-			'Google Drive connected successfully. State synchronized with your private appDataFolder (wellwisher-state.json).',
-		)
 	}, [])
 
-	const handleSyncNow = useCallback(() => {
-		const now = new Date().toISOString()
-		setLastSyncedAt(now)
-		if (typeof window !== 'undefined') {
-			localStorage.setItem('wellwisher.gdrive.last_synced', now)
+	const handleConnectGoogleDrive = useCallback(async () => {
+		setStorageStatus(null)
+		setStorageError(null)
+
+		const trimmedClientId = googleClientId.trim()
+		if (!trimmedClientId) {
+			setStorageError('Please enter a Google Cloud OAuth Client ID first.')
+			return
 		}
-		setStorageStatus('Synced successfully with Google Drive.')
-	}, [])
+
+		setIsSyncing(true)
+		try {
+			const token = await requestGoogleDriveToken(trimmedClientId)
+			setGoogleAccessToken(token)
+			if (typeof window !== 'undefined') {
+				sessionStorage.setItem('wellwisher.gdrive.access_token', token)
+				localStorage.setItem('wellwisher.gdrive.connected', 'true')
+			}
+			setIsDriveConnected(true)
+
+			// Try to download existing cloud state or upload current state
+			const remoteState = await downloadStateFromDrive(token)
+			if (remoteState) {
+				dispatch({
+					type: 'IMPORT_STATE',
+					payload: remoteState,
+				})
+				setStorageStatus('Connected to Google Drive and loaded existing remote state.')
+			} else {
+				await uploadStateToDrive(token, state)
+				setStorageStatus('Connected to Google Drive and uploaded local state to appDataFolder.')
+			}
+
+			const now = new Date().toISOString()
+			setLastSyncedAt(now)
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('wellwisher.gdrive.last_synced', now)
+			}
+		} catch (err) {
+			// If popup blocked or cancelled or running in test/offline environment, provide clear informative message
+			setStorageError(
+				`Google Drive connection failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+			)
+		} finally {
+			setIsSyncing(false)
+		}
+	}, [dispatch, googleClientId, state])
+
+	const handleSyncNow = useCallback(async () => {
+		setStorageStatus(null)
+		setStorageError(null)
+
+		if (!googleAccessToken) {
+			// Re-authenticate
+			await handleConnectGoogleDrive()
+			return
+		}
+
+		setIsSyncing(true)
+		try {
+			await uploadStateToDrive(googleAccessToken, state)
+			const now = new Date().toISOString()
+			setLastSyncedAt(now)
+			if (typeof window !== 'undefined') {
+				localStorage.setItem('wellwisher.gdrive.last_synced', now)
+			}
+			setStorageStatus('State synced successfully to Google Drive appDataFolder.')
+		} catch (err) {
+			setStorageError(
+				`Sync failed: ${err instanceof Error ? err.message : 'Unknown error'}`,
+			)
+		} finally {
+			setIsSyncing(false)
+		}
+	}, [googleAccessToken, handleConnectGoogleDrive, state])
 
 	const handleDisconnectGoogleDrive = useCallback(() => {
 		setIsDriveConnected(false)
 		setIsAutoSyncEnabled(false)
+		setGoogleAccessToken(null)
 		setLastSyncedAt(null)
 		if (typeof window !== 'undefined') {
 			localStorage.removeItem('wellwisher.gdrive.connected')
 			localStorage.removeItem('wellwisher.gdrive.autosync')
 			localStorage.removeItem('wellwisher.gdrive.last_synced')
+			sessionStorage.removeItem('wellwisher.gdrive.access_token')
 		}
 		setStorageStatus('Disconnected from Google Drive. Local storage remains intact.')
 	}, [])
@@ -335,11 +421,11 @@ export function SettingsSurface (): React.JSX.Element {
 	}, [dispatch, state.voicePreferences.autoPlay])
 
 	const handleSpeedChange = useCallback(
-		(e: React.ChangeEvent<HTMLSelectElement>) => {
+		(val: string) => {
 			dispatch({
 				type: 'SET_VOICE_PREFERENCE',
 				payload: {
-					speed: Number(e.target.value),
+					speed: Number(val),
 				},
 			})
 		},
@@ -421,7 +507,14 @@ export function SettingsSurface (): React.JSX.Element {
 		[dispatch],
 	)
 
-	const handleResetDemo = useCallback(() => {
+	const handleResetToDefault = useCallback(() => {
+		setStorageStatus(null)
+		setStorageError(null)
+		clearState()
+		router.push('/')
+	}, [router])
+
+	const handleQuickResetDemo = useCallback(() => {
 		setStorageStatus(null)
 		setStorageError(null)
 		clearState()
@@ -429,7 +522,7 @@ export function SettingsSurface (): React.JSX.Element {
 			type: 'RESET_STATE',
 			payload: createDemoState(),
 		})
-		setStorageStatus('Reset to Harsh demo scenario complete.')
+		setStorageStatus('Reset to demo baseline complete.')
 	}, [dispatch])
 
 	return (
@@ -556,12 +649,11 @@ export function SettingsSurface (): React.JSX.Element {
 							>
 								Available Start (Earliest)
 							</label>
-							<input
+							<CustomTimePicker
 								id='available-start'
-								type='time'
-								className={styles.input}
 								value={availableStart}
-								onChange={(e) => setAvailableStart(e.target.value)}
+								ariaLabel='Available start time'
+								onChange={(val) => setAvailableStart(val)}
 							/>
 						</div>
 
@@ -572,12 +664,11 @@ export function SettingsSurface (): React.JSX.Element {
 							>
 								Available End (Latest)
 							</label>
-							<input
+							<CustomTimePicker
 								id='available-end'
-								type='time'
-								className={styles.input}
 								value={availableEnd}
-								onChange={(e) => setAvailableEnd(e.target.value)}
+								ariaLabel='Available end time'
+								onChange={(val) => setAvailableEnd(val)}
 							/>
 						</div>
 					</div>
@@ -669,17 +760,18 @@ export function SettingsSurface (): React.JSX.Element {
 					<label htmlFor='voice-speed' className={styles.label}>
 						Speech Rate / Voice Speed
 					</label>
-					<select
+					<CustomSelect
 						id='voice-speed'
-						className={styles.select}
 						value={String(state.voicePreferences.speed ?? 1)}
+						ariaLabel='Speech Rate'
 						onChange={handleSpeedChange}
-					>
-						<option value='0.75'>0.75x (Relaxed & Deliberate)</option>
-						<option value='1'>1.0x (Normal Pace)</option>
-						<option value='1.25'>1.25x (Brisk & Focused)</option>
-						<option value='1.5'>1.5x (Rapid Review)</option>
-					</select>
+						options={[
+							{ value: '0.75', label: '0.75x (Relaxed & Deliberate)' },
+							{ value: '1', label: '1.0x (Normal Pace)' },
+							{ value: '1.25', label: '1.25x (Brisk & Focused)' },
+							{ value: '1.5', label: '1.5x (Rapid Review)' },
+						]}
+					/>
 				</div>
 			</section>
 
@@ -707,7 +799,7 @@ export function SettingsSurface (): React.JSX.Element {
 				<div className={styles.driveSyncCard}>
 					<div className={styles.driveSyncHeader}>
 						<span className={styles.badgeCloud}>
-							Local-First Storage (Ready for Google Drive Sync)
+							Google Drive Client-Side Sync
 						</span>
 						<span
 							className={`${styles.syncStatusIndicator} ${
@@ -727,12 +819,53 @@ export function SettingsSurface (): React.JSX.Element {
 							: 'Connect your personal Google Drive to enable seamless bidirectional synchronization between your laptop and mobile devices without any intermediate cloud database.'}
 					</p>
 
+					{/* Google OAuth Client ID Configuration */}
+					<div className={styles.clientIdGroup}>
+						<label htmlFor='google-client-id' className={styles.label}>
+							Google Cloud OAuth Client ID
+						</label>
+						<input
+							id='google-client-id'
+							type='text'
+							className={styles.input}
+							value={googleClientId}
+							onChange={(e) => handleSaveClientId(e.target.value)}
+							placeholder='e.g., 123456789-abcdef.apps.googleusercontent.com'
+						/>
+					</div>
+
+					<div style={{ display: 'flex', gap: 'var(--ww-space-2)' }}>
+						<button
+							type='button'
+							className={styles.smallButton}
+							onClick={() => setShowGcpGuide((prev) => !prev)}
+						>
+							{showGcpGuide ? 'Hide GCP Setup Guide' : 'How to get OAuth Client ID?'}
+						</button>
+					</div>
+
+					{showGcpGuide && (
+						<div className={styles.gcpGuideBox}>
+							<h3 className={styles.gcpGuideTitle}>Google Cloud Platform Setup (1–2 minutes)</h3>
+							<ol className={styles.gcpStepsList}>
+								<li>Open <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noreferrer" style={{ color: 'var(--ww-sage)' }}>GCP Credentials Console</a> in your preferred project.</li>
+								<li>Click <strong>+ Create Credentials</strong> &rarr; <strong>OAuth client ID</strong>.</li>
+								<li>Choose Application type: <strong>Web application</strong>.</li>
+								<li>Under <strong>Authorized JavaScript origins</strong>, add:
+									<br /><code>https://coderhd.github.io</code>
+									<br /><code>http://localhost:3000</code>
+								</li>
+								<li>Click <strong>Create</strong>, copy the Client ID, and paste it in the field above.</li>
+							</ol>
+						</div>
+					)}
+
 					{lastSyncedAt && (
 						<div className={styles.driveSyncMeta}>
 							<span>
 								Last Synced: {new Date(lastSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} ({new Date(lastSyncedAt).toLocaleDateString()})
 							</span>
-							<span>Storage File: <code>wellwisher-state.json</code></span>
+							<span>Storage File: <code>wellwisher-state.json</code> (Hidden appDataFolder)</span>
 						</div>
 					)}
 
@@ -742,8 +875,9 @@ export function SettingsSurface (): React.JSX.Element {
 								type='button'
 								className={`${styles.actionButton} ${styles.driveButtonPrimary}`}
 								onClick={handleConnectGoogleDrive}
+								disabled={isSyncing}
 							>
-								Connect Google Drive
+								{isSyncing ? 'Connecting...' : 'Connect Google Drive'}
 							</button>
 						) : (
 							<>
@@ -751,9 +885,10 @@ export function SettingsSurface (): React.JSX.Element {
 									type='button'
 									className={`${styles.actionButton} ${styles.actionButtonSubtle}`}
 									onClick={handleSyncNow}
+									disabled={isSyncing}
 									aria-label='Sync now with Google Drive'
 								>
-									Sync Now
+									{isSyncing ? 'Syncing...' : 'Sync Now'}
 								</button>
 
 								<button
@@ -846,19 +981,29 @@ export function SettingsSurface (): React.JSX.Element {
 
 					<div className={styles.dataActionCard}>
 						<div>
-							<h3 className={styles.dataActionTitle}>Reset Scenario</h3>
+							<h3 className={styles.dataActionTitle}>Reset to Default</h3>
 							<p className={styles.dataActionDesc}>
-								Revert local storage back to the default Harsh Dave demo
-								state.
+								Clear local data and launch the first-class landing page onboarding
+								flow afresh.
 							</p>
 						</div>
-						<button
-							type='button'
-							className={`${styles.actionButton} ${styles.actionButtonDanger}`}
-							onClick={handleResetDemo}
-						>
-							Reset to Demo Scenario
-						</button>
+						<div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--ww-space-2)' }}>
+							<button
+								type='button'
+								className={`${styles.actionButton} ${styles.actionButtonDanger}`}
+								onClick={handleResetToDefault}
+							>
+								Reset to Default (Onboarding)
+							</button>
+							<button
+								type='button'
+								className={`${styles.actionButton} ${styles.actionButtonSubtle}`}
+								onClick={handleQuickResetDemo}
+								style={{ fontSize: '0.75rem', padding: 'var(--ww-space-1) var(--ww-space-2)' }}
+							>
+								Quick Reset to Demo Baseline
+							</button>
+						</div>
 					</div>
 				</div>
 			</section>

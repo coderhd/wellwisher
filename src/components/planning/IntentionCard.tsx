@@ -8,6 +8,9 @@ import type {
 	FlexibleIntention,
 } from '../../domain/planning/types'
 
+import { CustomSelect } from '../ui/CustomSelect'
+import { CustomTimePicker } from '../ui/CustomTimePicker'
+
 export interface AvailableDayOption {
 	date: string
 	label: string
@@ -80,10 +83,7 @@ export function IntentionCard ({
 			}
 		: {}
 
-	function handleAccessibleSelect (
-		event: React.ChangeEvent<HTMLSelectElement>,
-	) {
-		const val = event.target.value
+	function handleAccessibleSelect (val: string) {
 		if (!val || !onSuggest) {
 			return
 		}
@@ -91,7 +91,6 @@ export function IntentionCard ({
 		if (date && (window === 'morning' || window === 'afternoon' || window === 'evening')) {
 			onSuggest(intention.id, { date, window })
 		}
-		event.target.value = ''
 	}
 
 	function handlePinSubmit (event: React.FormEvent) {
@@ -121,6 +120,23 @@ export function IntentionCard ({
 	]
 		.filter(Boolean)
 		.join(' ')
+
+	const suggestOptions = availableDays
+		? availableDays.flatMap((day) => [
+				{
+					value: `${day.date}:morning`,
+					label: `Suggest on ${day.label} morning`,
+				},
+				{
+					value: `${day.date}:afternoon`,
+					label: `Suggest on ${day.label} afternoon`,
+				},
+				{
+					value: `${day.date}:evening`,
+					label: `Suggest on ${day.label} evening`,
+				},
+			])
+		: []
 
 	return (
 		<div
@@ -192,45 +208,19 @@ export function IntentionCard ({
 			</div>
 
 			{/* Accessible Fallback Menu: Suggest on Day + Window */}
-			{onSuggest && availableDays && availableDays.length > 0 && (
+			{onSuggest && suggestOptions.length > 0 && (
 				<div
 					className='accessibleSuggestContainer'
 					onClick={(e) => e.stopPropagation()}
 					onPointerDown={(e) => e.stopPropagation()}
 				>
-					<select
-						className='accessibleSuggestSelect'
-						aria-label={`Placement options for ${intention.title}`}
-						defaultValue=''
+					<CustomSelect
+						value=''
+						placeholder='Suggest on...'
+						options={suggestOptions}
 						onChange={handleAccessibleSelect}
-					>
-						<option
-							value=''
-							disabled
-						>
-							Suggest on...
-						</option>
-						{availableDays.flatMap((day) => [
-							<option
-								key={`${day.date}:morning`}
-								value={`${day.date}:morning`}
-							>
-								Suggest on {day.label} morning
-							</option>,
-							<option
-								key={`${day.date}:afternoon`}
-								value={`${day.date}:afternoon`}
-							>
-								Suggest on {day.label} afternoon
-							</option>,
-							<option
-								key={`${day.date}:evening`}
-								value={`${day.date}:evening`}
-							>
-								Suggest on {day.label} evening
-							</option>,
-						])}
-					</select>
+						ariaLabel={`Placement options for ${intention.title}`}
+					/>
 				</div>
 			)}
 
@@ -255,31 +245,10 @@ export function IntentionCard ({
 							className='pinForm'
 							onSubmit={handlePinSubmit}
 						>
-							<label
-								htmlFor={`pin-time-${intention.id}`}
-								style={{
-									position: 'absolute',
-									width: 1,
-									height: 1,
-									padding: 0,
-									margin: -1,
-									overflow: 'hidden',
-									clip: 'rect(0, 0, 0, 0)',
-									whiteSpace: 'nowrap',
-									border: 0,
-								}}
-							>
-								Start time
-							</label>
-							<input
-								id={`pin-time-${intention.id}`}
-								type='time'
-								className='pinInput'
+							<CustomTimePicker
 								value={pinTime}
-								placeholder='09:00'
-								aria-label='Start time'
-								onChange={(e) => setPinTime(e.target.value)}
-								autoFocus
+								onChange={setPinTime}
+								ariaLabel={`Start time for ${intention.title}`}
 							/>
 							<button
 								type='submit'

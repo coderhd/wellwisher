@@ -83,17 +83,29 @@ describe('IntentionModal', () => {
 		const titleInput = screen.getByLabelText(/title/i)
 		await user.type(titleInput, 'Evening Reading')
 
-		const kindSelect = screen.getByLabelText(/kind/i)
-		await user.selectOptions(kindSelect, 'leisure')
+		// Select Leisure
+		const kindCombobox = screen.getByRole('combobox', { name: /intention kind|kind/i })
+		await user.click(kindCombobox)
+		const leisureOption = screen.getByRole('option', { name: /leisure/i })
+		await user.click(leisureOption)
 
-		const durationSelect = screen.getByLabelText(/duration/i)
-		await user.selectOptions(durationSelect, '45')
+		// Select Duration 45
+		const durationCombobox = screen.getByRole('combobox', { name: /intention duration|duration/i })
+		await user.click(durationCombobox)
+		const durationOption = screen.getByRole('option', { name: /45 min/i })
+		await user.click(durationOption)
 
-		const windowSelect = screen.getByLabelText(/preferred window|window/i)
-		await user.selectOptions(windowSelect, 'evening')
+		// Select Preferred Window Evening
+		const windowCombobox = screen.getByRole('combobox', { name: /preferred window|window/i })
+		await user.click(windowCombobox)
+		const eveningOption = screen.getByRole('option', { name: /evening/i })
+		await user.click(eveningOption)
 
-		const prioritySelect = screen.getByLabelText(/priority/i)
-		await user.selectOptions(prioritySelect, '2')
+		// Select Priority 2
+		const priorityCombobox = screen.getByRole('combobox', { name: /intention priority|priority/i })
+		await user.click(priorityCombobox)
+		const priorityOption = screen.getByRole('option', { name: /2 \(normal\)/i })
+		await user.click(priorityOption)
 
 		const submitBtn = screen.getByRole('button', {
 			name: /create intention|save/i,
