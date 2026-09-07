@@ -43,8 +43,8 @@
 .summaryBanner {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-	gap: var(--ww-space-4);
-	padding: var(--ww-space-5) var(--ww-space-6);
+	gap: var(--ww-space-6);
+	padding: var(--ww-space-6) var(--ww-space-8);
 	background-color: var(--ww-panel);
 	border: 1px solid rgba(159, 185, 170, 0.2);
 	border-radius: var(--ww-radius-lg);
@@ -54,8 +54,8 @@
 .summaryCard {
 	display: flex;
 	flex-direction: column;
-	gap: var(--ww-space-1);
-	padding: var(--ww-space-2) 0;
+	gap: var(--ww-space-2);
+	padding: var(--ww-space-2) var(--ww-space-3);
 }
 
 .summaryLabel {
