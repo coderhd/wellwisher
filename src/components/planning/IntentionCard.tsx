@@ -23,6 +23,8 @@ export interface IntentionCardProps {
 		target: { date: string; window: 'morning' | 'afternoon' | 'evening' },
 	) => void
 	onPin?: (allocationId: string, start: string) => void
+	onEdit?: (intention: FlexibleIntention) => void
+	onDelete?: (intentionId: string) => void
 	className?: string
 }
 
@@ -46,6 +48,8 @@ export function IntentionCard ({
 	availableDays,
 	onSuggest,
 	onPin,
+	onEdit,
+	onDelete,
 	className,
 }: IntentionCardProps): React.JSX.Element {
 	const [isPinning, setIsPinning] = useState(false)
@@ -128,18 +132,49 @@ export function IntentionCard ({
 			{...(isDraggable ? listeners : {})}
 		>
 			<div className='intentionHeader'>
-				<h4 className='intentionTitle'>{intention.title}</h4>
-				<div className='intentionBadges'>
-					<span
-						className={`badge ${intention.kind === 'leisure' ? 'badgeLeisure' : 'badgeWork'}`}
-					>
-						{intention.kind}
-					</span>
-					{isPinned && <span className='badge badgePinned'>Pinned</span>}
-					{isSuggested && (
-						<span className='badge badgeSuggested'>Suggested</span>
-					)}
+				<div className='intentionHeaderMain'>
+					<h4 className='intentionTitle'>{intention.title}</h4>
+					<div className='intentionBadges'>
+						<span
+							className={`badge ${intention.kind === 'leisure' ? 'badgeLeisure' : 'badgeWork'}`}
+						>
+							{intention.kind}
+						</span>
+						{isPinned && <span className='badge badgePinned'>Pinned</span>}
+						{isSuggested && (
+							<span className='badge badgeSuggested'>Suggested</span>
+						)}
+					</div>
 				</div>
+
+				{(onEdit || onDelete) && (
+					<div
+						className='cardActions'
+						onClick={(e) => e.stopPropagation()}
+						onPointerDown={(e) => e.stopPropagation()}
+					>
+						{onEdit && (
+							<button
+								type='button'
+								className='cardActionButton'
+								aria-label={`Edit ${intention.title}`}
+								onClick={() => onEdit(intention)}
+							>
+								Edit
+							</button>
+						)}
+						{onDelete && (
+							<button
+								type='button'
+								className='cardActionButton cardActionButtonDelete'
+								aria-label={`Delete ${intention.title}`}
+								onClick={() => onDelete(intention.id)}
+							>
+								Delete
+							</button>
+						)}
+					</div>
+				)}
 			</div>
 
 			<div className='intentionMeta'>

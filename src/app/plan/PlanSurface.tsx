@@ -3,6 +3,10 @@
 import React, { useCallback } from 'react'
 
 import { AllocationBoard } from '../../components/planning/AllocationBoard'
+import type {
+	FlexibleIntention,
+	RhythmAnchor,
+} from '../../domain/planning/types'
 import { useWellwisher } from '../../state/WellwisherProvider'
 
 export function PlanSurface (): React.JSX.Element {
@@ -56,6 +60,66 @@ export function PlanSurface (): React.JSX.Element {
 		})
 	}, [dispatch])
 
+	const handleAddIntention = useCallback(
+		(intention: FlexibleIntention) => {
+			dispatch({
+				type: 'ADD_INTENTION',
+				payload: intention,
+			})
+		},
+		[dispatch],
+	)
+
+	const handleEditIntention = useCallback(
+		(intention: FlexibleIntention) => {
+			dispatch({
+				type: 'UPDATE_INTENTION',
+				payload: intention,
+			})
+		},
+		[dispatch],
+	)
+
+	const handleDeleteIntention = useCallback(
+		(intentionId: string) => {
+			dispatch({
+				type: 'DELETE_INTENTION',
+				payload: { intentionId },
+			})
+		},
+		[dispatch],
+	)
+
+	const handleAddAnchor = useCallback(
+		(anchor: RhythmAnchor) => {
+			dispatch({
+				type: 'ADD_ANCHOR',
+				payload: anchor,
+			})
+		},
+		[dispatch],
+	)
+
+	const handleEditAnchor = useCallback(
+		(anchor: RhythmAnchor) => {
+			dispatch({
+				type: 'UPDATE_ANCHOR',
+				payload: anchor,
+			})
+		},
+		[dispatch],
+	)
+
+	const handleDeleteAnchor = useCallback(
+		(anchorId: string) => {
+			dispatch({
+				type: 'DELETE_ANCHOR',
+				payload: { anchorId },
+			})
+		},
+		[dispatch],
+	)
+
 	return (
 		<AllocationBoard
 			weekPlan={weekPlan}
@@ -67,6 +131,12 @@ export function PlanSurface (): React.JSX.Element {
 			onPin={handlePin}
 			onArrange={handleArrange}
 			onUndo={handleUndo}
+			onAddIntention={handleAddIntention}
+			onEditIntention={handleEditIntention}
+			onDeleteIntention={handleDeleteIntention}
+			onAddAnchor={handleAddAnchor}
+			onEditAnchor={handleEditAnchor}
+			onDeleteAnchor={handleDeleteAnchor}
 		/>
 	)
 }

@@ -4,6 +4,8 @@ import type { RhythmAnchor } from '../../domain/planning/types'
 
 export interface RhythmAnchorCardProps {
 	anchor: RhythmAnchor
+	onEdit?: (anchor: RhythmAnchor) => void
+	onDelete?: (anchorId: string) => void
 	className?: string
 }
 
@@ -28,6 +30,8 @@ function formatRepeat (repeat: RhythmAnchor['repeat']): string {
 
 export function RhythmAnchorCard ({
 	anchor,
+	onEdit,
+	onDelete,
 	className,
 }: RhythmAnchorCardProps): React.JSX.Element {
 	const cardClasses = ['rhythmAnchorCard', className ?? '']
@@ -40,9 +44,40 @@ export function RhythmAnchorCard ({
 			data-testid={`rhythm-anchor-${anchor.id}`}
 		>
 			<div className='rhythmHeader'>
-				<h4 className='rhythmTitle'>{anchor.title}</h4>
-				{anchor.protected && (
-					<span className='badge badgeProtected'>Protected</span>
+				<div className='rhythmHeaderMain'>
+					<h4 className='rhythmTitle'>{anchor.title}</h4>
+					{anchor.protected && (
+						<span className='badge badgeProtected'>Protected</span>
+					)}
+				</div>
+
+				{(onEdit || onDelete) && (
+					<div
+						className='cardActions'
+						onClick={(e) => e.stopPropagation()}
+						onPointerDown={(e) => e.stopPropagation()}
+					>
+						{onEdit && (
+							<button
+								type='button'
+								className='cardActionButton'
+								aria-label={`Edit ${anchor.title}`}
+								onClick={() => onEdit(anchor)}
+							>
+								Edit
+							</button>
+						)}
+						{onDelete && (
+							<button
+								type='button'
+								className='cardActionButton cardActionButtonDelete'
+								aria-label={`Delete ${anchor.title}`}
+								onClick={() => onDelete(anchor.id)}
+							>
+								Delete
+							</button>
+						)}
+					</div>
 				)}
 			</div>
 			<div className='rhythmMeta'>
