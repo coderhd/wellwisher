@@ -4,7 +4,7 @@ import styles from './HeaderNav.module.css'
 import { ProfileMenu } from './ProfileMenu'
 
 export interface HeaderNavProps {
-	activeSurface: 'today' | 'week' | 'plan'
+	activeSurface?: 'today' | 'week' | 'plan' | 'settings'
 }
 
 export function HeaderNav ({

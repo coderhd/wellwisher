@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import React, { useEffect, useRef, useState } from 'react'
 
 import { createDemoState } from '../../data/demoScenario'
@@ -74,23 +75,23 @@ export function ProfileMenu (): React.JSX.Element {
 						<p className={styles.profileEmail}>Personal Cockpit</p>
 					</div>
 
-					<button
-						type='button'
+					<Link
+						href='/settings'
 						role='menuitem'
 						className={styles.menuItem}
 						onClick={handleClose}
 					>
 						Settings
-					</button>
+					</Link>
 
-					<button
-						type='button'
+					<Link
+						href='/settings#voice'
 						role='menuitem'
 						className={styles.menuItem}
 						onClick={handleClose}
 					>
 						Voice preferences
-					</button>
+					</Link>
 
 					<div className={styles.menuDivider} />
 
