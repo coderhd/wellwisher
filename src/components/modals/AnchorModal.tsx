@@ -157,7 +157,11 @@ export function AnchorModal ({
 			}
 
 			const anchorToSave: RhythmAnchor = {
-				id: initialAnchor?.id ?? `anchor-${Date.now()}`,
+				id:
+					initialAnchor?.id ??
+					(typeof crypto !== 'undefined' && crypto.randomUUID
+						? `anchor-${crypto.randomUUID()}`
+						: `anchor-${Date.now()}`),
 				title: trimmedTitle,
 				startTime,
 				endTime,

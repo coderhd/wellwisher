@@ -103,7 +103,11 @@ export function IntentionModal ({
 			}
 
 			const intentionToSave: FlexibleIntention = {
-				id: initialIntention?.id ?? `intention-${Date.now()}`,
+				id:
+					initialIntention?.id ??
+					(typeof crypto !== 'undefined' && crypto.randomUUID
+						? `intention-${crypto.randomUUID()}`
+						: `intention-${Date.now()}`),
 				title: trimmedTitle,
 				kind,
 				durationMinutes: parsedDuration,

@@ -87,6 +87,14 @@ const FocusSessionSchema = z.object({
 	completedAt: z.string().optional(),
 })
 
+const PlanChangeSchema = z.object({
+	description: z.string(),
+	timestamp: z.string(),
+	previousAllocations: z.array(AllocationSchema),
+	previousProtectedCommitments: z.array(ProtectedCommitmentSchema).optional(),
+	tradeOff: z.string().optional(),
+})
+
 const WellwisherStateSchema = z.object({
 	weekStart: z.string(),
 	anchors: z.array(RhythmAnchorSchema),
@@ -102,7 +110,7 @@ const WellwisherStateSchema = z.object({
 	voicePreferences: VoicePreferencesSchema.optional().default({
 		muted: false,
 	}),
-	lastPlanChange: z.any().nullable().optional(),
+	lastPlanChange: PlanChangeSchema.nullable().optional(),
 	scheduleBounds: z
 		.object({
 			availableStart: z.string(),
