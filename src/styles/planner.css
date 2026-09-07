@@ -1,7 +1,7 @@
 .plannerContainer {
 	display: flex;
 	flex-direction: column;
-	gap: var(--ww-space-6);
+	gap: var(--ww-space-5);
 	width: 100%;
 	max-width: 1400px;
 	margin: 0 auto;
@@ -101,10 +101,100 @@
 	outline-offset: 2px;
 }
 
+/* 7-Day Ribbon Navigation */
+.plannerRibbon {
+	width: 100%;
+	padding: var(--ww-space-2);
+	border: 1px solid rgba(159, 185, 170, 0.2);
+	border-radius: var(--ww-radius-lg);
+	background: var(--ww-panel);
+}
+
+.ribbonTrack {
+	display: flex;
+	gap: var(--ww-space-3);
+	overflow-x: auto;
+	padding: var(--ww-space-1);
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
+}
+
+.ribbonTrack::-webkit-scrollbar {
+	height: 4px;
+}
+
+.ribbonTrack::-webkit-scrollbar-thumb {
+	border-radius: 4px;
+	background: rgba(159, 185, 170, 0.3);
+}
+
+.ribbonDayPill {
+	display: flex;
+	flex: 1 0 120px;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	min-width: 110px;
+	padding: var(--ww-space-3) var(--ww-space-2);
+	border: 1px solid rgba(159, 185, 170, 0.18);
+	border-radius: var(--ww-radius-md);
+	background: rgba(44, 57, 61, 0.35);
+	color: var(--ww-text);
+	cursor: pointer;
+	font-family: var(--ww-font-sans);
+	text-align: center;
+	transition: all 0.15s ease;
+}
+
+.ribbonDayPill:hover {
+	border-color: rgba(159, 185, 170, 0.4);
+	background: rgba(159, 185, 170, 0.12);
+}
+
+.ribbonDayPillActive {
+	border-color: var(--ww-sage);
+	background: rgba(159, 185, 170, 0.22);
+	box-shadow: 0 0 0 1px var(--ww-sage), 0 4px 12px rgba(0, 0, 0, 0.25);
+}
+
+.ribbonDayPill:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 2px;
+}
+
+.ribbonDayName {
+	font-size: 0.9375rem;
+	font-weight: 700;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+}
+
+.ribbonDayDate {
+	color: var(--ww-muted);
+	font-size: 0.8125rem;
+}
+
+.ribbonDayCapacity {
+	margin-top: 3px;
+	padding: 1px 6px;
+	border-radius: var(--ww-radius-pill);
+	background: rgba(159, 185, 170, 0.15);
+	color: var(--ww-sage);
+	font-size: 0.6875rem;
+	font-weight: 600;
+}
+
+.ribbonDayPillActive .ribbonDayCapacity {
+	background: rgba(159, 185, 170, 0.3);
+	color: #fff;
+}
+
+/* Main Layout: Sidebar Shelf + Focused Single-Day Canvas */
 .plannerLayout {
 	display: grid;
-	grid-template-columns: 320px 1fr;
-	gap: var(--ww-space-6);
+	grid-template-columns: 340px 1fr;
+	gap: var(--ww-space-5);
 	align-items: start;
 }
 
@@ -118,7 +208,7 @@
 .plannerSidebar {
 	display: flex;
 	flex-direction: column;
-	gap: var(--ww-space-6);
+	gap: var(--ww-space-5);
 }
 
 .shelfSection {
@@ -135,6 +225,13 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	gap: var(--ww-space-2);
+}
+
+.shelfHeaderLeft {
+	display: flex;
+	align-items: center;
+	gap: var(--ww-space-2);
 }
 
 .shelfTitle {
@@ -151,6 +248,31 @@
 	color: var(--ww-text);
 	font-size: 0.75rem;
 	font-weight: 600;
+}
+
+.shelfAddButton {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 10px;
+	border: 1px solid rgba(159, 185, 170, 0.35);
+	border-radius: var(--ww-radius-pill);
+	background: rgba(159, 185, 170, 0.1);
+	color: var(--ww-sage);
+	font-family: var(--ww-font-sans);
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.shelfAddButton:hover {
+	border-color: var(--ww-sage);
+	background: rgba(159, 185, 170, 0.22);
+}
+
+.shelfAddButton:focus-visible {
+	outline: 2px solid var(--ww-sage);
+	outline-offset: 1px;
 }
 
 .shelfList {
@@ -170,6 +292,111 @@
 	color: var(--ww-muted);
 	font-size: 0.875rem;
 	text-align: center;
+}
+
+/* Focused Single-Day Canvas */
+.focusedDayCanvas {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-4);
+	padding: var(--ww-space-5);
+	border: 1px solid rgba(159, 185, 170, 0.2);
+	border-radius: var(--ww-radius-lg);
+	background: var(--ww-panel);
+}
+
+.focusedDayHeader {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--ww-space-3);
+	padding-bottom: var(--ww-space-3);
+	border-bottom: 1px solid rgba(159, 185, 170, 0.15);
+}
+
+.focusedDayHeaderInfo {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.focusedDayTitle {
+	margin: 0;
+	color: var(--ww-text);
+	font-family: var(--ww-font-serif);
+	font-size: 1.625rem;
+	font-weight: 400;
+}
+
+.focusedDayDate {
+	color: var(--ww-muted);
+	font-size: 0.875rem;
+}
+
+.focusedDayCapacityPill {
+	padding: 4px 10px;
+	border-radius: var(--ww-radius-pill);
+	background: rgba(159, 185, 170, 0.18);
+	color: var(--ww-sage);
+	font-size: 0.8125rem;
+	font-weight: 600;
+}
+
+.focusedDayWindows {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: var(--ww-space-4);
+}
+
+@media (max-width: 860px) {
+	.focusedDayWindows {
+		grid-template-columns: 1fr;
+	}
+}
+
+.windowDropZone {
+	display: flex;
+	flex-direction: column;
+	gap: var(--ww-space-3);
+	min-height: 200px;
+	padding: var(--ww-space-3);
+	border: 1px dashed rgba(159, 185, 170, 0.25);
+	border-radius: var(--ww-radius-md);
+	background: rgba(32, 42, 46, 0.45);
+	transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.windowDropZoneOver {
+	border-color: var(--ww-sage);
+	border-style: solid;
+	background: rgba(159, 185, 170, 0.15);
+}
+
+.windowHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding-bottom: var(--ww-space-2);
+	border-bottom: 1px solid rgba(159, 185, 170, 0.12);
+	color: var(--ww-sage);
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+}
+
+.windowTimeRange {
+	color: var(--ww-muted);
+	font-size: 0.6875rem;
+	font-weight: 500;
+}
+
+.windowContents {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: var(--ww-space-3);
 }
 
 /* Intention Card */
@@ -211,6 +438,13 @@
 	gap: var(--ww-space-2);
 }
 
+.intentionHeaderMain {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
+}
+
 .intentionTitle {
 	margin: 0;
 	font-size: 0.9375rem;
@@ -222,6 +456,7 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: var(--ww-space-1);
+	margin-top: 2px;
 }
 
 .badge {
@@ -253,6 +488,40 @@
 .badgePinned {
 	background: rgba(121, 166, 210, 0.25);
 	color: var(--ww-pinned);
+}
+
+.cardActions {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.cardActionButton {
+	padding: 2px 6px;
+	border: 1px solid rgba(159, 185, 170, 0.25);
+	border-radius: var(--ww-radius-sm);
+	background: rgba(44, 57, 61, 0.6);
+	color: var(--ww-muted);
+	font-family: var(--ww-font-sans);
+	font-size: 0.6875rem;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.cardActionButton:hover {
+	border-color: rgba(159, 185, 170, 0.5);
+	background: rgba(159, 185, 170, 0.2);
+	color: var(--ww-text);
+}
+
+.cardActionButtonDelete {
+	border-color: rgba(223, 161, 141, 0.3);
+	color: var(--ww-peach);
+}
+
+.cardActionButtonDelete:hover {
+	border-color: var(--ww-peach);
+	background: rgba(223, 161, 141, 0.2);
 }
 
 .intentionMeta {
@@ -355,8 +624,16 @@
 
 .rhythmHeader {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
+	gap: var(--ww-space-2);
+}
+
+.rhythmHeaderMain {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .rhythmTitle {
@@ -366,6 +643,8 @@
 }
 
 .badgeProtected {
+	align-self: flex-start;
+	margin-top: 2px;
 	background: rgba(159, 185, 170, 0.2);
 	color: var(--ww-sage);
 }
@@ -376,98 +655,6 @@
 	gap: var(--ww-space-2);
 	color: var(--ww-muted);
 	font-size: 0.8125rem;
-}
-
-/* Week Grid & Day Columns */
-.weekGrid {
-	display: grid;
-	grid-template-columns: repeat(7, minmax(140px, 1fr));
-	gap: var(--ww-space-3);
-	overflow-x: auto;
-	padding-bottom: var(--ww-space-4);
-}
-
-@media (max-width: 1200px) {
-	.weekGrid {
-		grid-template-columns: repeat(7, minmax(160px, 1fr));
-	}
-}
-
-.dayColumn {
-	display: flex;
-	flex-direction: column;
-	gap: var(--ww-space-3);
-	min-width: 140px;
-	padding: var(--ww-space-3);
-	border: 1px solid rgba(159, 185, 170, 0.15);
-	border-radius: var(--ww-radius-md);
-	background: rgba(44, 57, 61, 0.3);
-}
-
-.dayHeader {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	padding-bottom: var(--ww-space-2);
-	border-bottom: 1px solid rgba(159, 185, 170, 0.12);
-}
-
-.dayTitle {
-	margin: 0;
-	color: var(--ww-text);
-	font-size: 0.9375rem;
-	font-weight: 600;
-}
-
-.dayDateLabel {
-	color: var(--ww-muted);
-	font-size: 0.75rem;
-}
-
-.dayCapacityPill {
-	display: inline-block;
-	margin-top: 4px;
-	padding: 2px 6px;
-	border-radius: var(--ww-radius-pill);
-	background: rgba(159, 185, 170, 0.12);
-	color: var(--ww-sage);
-	font-size: 0.6875rem;
-	font-weight: 600;
-}
-
-.windowsContainer {
-	display: flex;
-	flex-direction: column;
-	gap: var(--ww-space-3);
-}
-
-.windowDropZone {
-	display: flex;
-	flex-direction: column;
-	gap: var(--ww-space-2);
-	min-height: 72px;
-	padding: var(--ww-space-2);
-	border: 1px dashed rgba(159, 185, 170, 0.18);
-	border-radius: var(--ww-radius-sm);
-	background: rgba(32, 42, 46, 0.4);
-	transition: background-color 0.15s ease, border-color 0.15s ease;
-}
-
-.windowDropZoneOver {
-	border-color: var(--ww-sage);
-	border-style: solid;
-	background: rgba(159, 185, 170, 0.1);
-}
-
-.windowHeader {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	color: var(--ww-muted);
-	font-size: 0.6875rem;
-	font-weight: 600;
-	letter-spacing: 0.05em;
-	text-transform: uppercase;
 }
 
 .protectedBlock {

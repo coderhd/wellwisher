@@ -21,6 +21,7 @@ import type {
 	MoveTarget,
 	ProtectedCommitment,
 	RhythmAnchor,
+	ScheduleBounds,
 	WeekPlan,
 } from '../domain/planning/types'
 
@@ -49,11 +50,21 @@ export interface WellwisherState {
 	focusSession: FocusSessionState
 	voicePreferences: VoicePreferences
 	lastPlanChange: PlanChange | null
+	scheduleBounds?: ScheduleBounds
 }
 
 export type WellwisherAction =
 	| { type: 'ADD_ANCHOR'; payload: RhythmAnchor }
+	| { type: 'UPDATE_ANCHOR'; payload: RhythmAnchor }
+	| { type: 'DELETE_ANCHOR'; payload: { anchorId: string } }
 	| { type: 'ADD_INTENTION'; payload: FlexibleIntention }
+	| { type: 'UPDATE_INTENTION'; payload: FlexibleIntention }
+	| { type: 'DELETE_INTENTION'; payload: { intentionId: string } }
+	| {
+			type: 'UPDATE_SCHEDULE_BOUNDS'
+			payload: { availableStart?: string; availableEnd?: string }
+	  }
+	| { type: 'IMPORT_STATE'; payload: WellwisherState }
 	| { type: 'ARRANGE_WEEK'; payload?: { preserveOpenMinutesPerDay?: number } }
 	| {
 			type: 'MOVE_ALLOCATION'
@@ -116,6 +127,12 @@ export function buildWeekPlan (state: WellwisherState): WeekPlan {
 			date,
 			protectedCommitments: dayProtected.map((c) => ({ ...c })),
 			allocations: dayAllocations.map((a) => ({ ...a })),
+			...(state.scheduleBounds
+				? {
+						availableStart: state.scheduleBounds.availableStart,
+						availableEnd: state.scheduleBounds.availableEnd,
+					}
+				: {}),
 		}
 	})
 
@@ -160,10 +177,98 @@ export function wellwisherReducer (
 			}
 		}
 
+		case 'UPDATE_ANCHOR': {
+			const nextAnchors = state.anchors.map((anchor) =>
+				anchor.id === action.payload.id ? action.payload : anchor,
+			)
+			const retainedCommitments = state.protectedCommitments.filter(
+				(commitment) => commitment.anchorId !== action.payload.id,
+			)
+			const updatedCommitments = action.payload.protected
+				? expandRecurrence(action.payload, state.weekStart)
+				: []
+
+			return {
+				...state,
+				anchors: nextAnchors,
+				protectedCommitments: [
+					...retainedCommitments,
+					...updatedCommitments,
+				],
+			}
+		}
+
+		case 'DELETE_ANCHOR': {
+			return {
+				...state,
+				anchors: state.anchors.filter(
+					(anchor) => anchor.id !== action.payload.anchorId,
+				),
+				protectedCommitments: state.protectedCommitments.filter(
+					(commitment) => commitment.anchorId !== action.payload.anchorId,
+				),
+			}
+		}
+
 		case 'ADD_INTENTION': {
 			return {
 				...state,
 				intentions: [...state.intentions, action.payload],
+			}
+		}
+
+		case 'UPDATE_INTENTION': {
+			const nextIntentions = state.intentions.map((intention) =>
+				intention.id === action.payload.id ? action.payload : intention,
+			)
+			const nextAllocations = state.allocations.map((allocation) => {
+				if (allocation.intentionId === action.payload.id) {
+					return {
+						...allocation,
+						durationMinutes: action.payload.durationMinutes,
+					}
+				}
+				return allocation
+			})
+
+			return {
+				...state,
+				intentions: nextIntentions,
+				allocations: nextAllocations,
+			}
+		}
+
+		case 'DELETE_INTENTION': {
+			return {
+				...state,
+				intentions: state.intentions.filter(
+					(intention) => intention.id !== action.payload.intentionId,
+				),
+				allocations: state.allocations.filter(
+					(allocation) => allocation.intentionId !== action.payload.intentionId,
+				),
+			}
+		}
+
+		case 'UPDATE_SCHEDULE_BOUNDS': {
+			const currentBounds = state.scheduleBounds ?? {
+				availableStart: '07:30',
+				availableEnd: '22:30',
+			}
+			return {
+				...state,
+				scheduleBounds: {
+					availableStart:
+						action.payload.availableStart ?? currentBounds.availableStart,
+					availableEnd:
+						action.payload.availableEnd ?? currentBounds.availableEnd,
+				},
+			}
+		}
+
+		case 'IMPORT_STATE': {
+			return {
+				...action.payload,
 			}
 		}
 

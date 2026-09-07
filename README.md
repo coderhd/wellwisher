@@ -17,12 +17,42 @@ Wellwisher is a responsive, local-first web application designed to bring calm a
 
 ---
 
-## Surfaces
+## Surfaces & Architecture
 
-1. **Today (`/today`):** The primary daily operating cockpit. Displays the current recommendation, active focus timer or completion state, day capacity breakdown, and a compact week ribbon.
-2. **Week (`/week`):** Seven-day horizon view displaying daily protected time, suggested allocations, and open capacity across all days without a noisy 24-hour grid.
-3. **Day Detail (`/day/[date]`):** Detailed day timeline showing exact times for anchored commitments and broad windows for suggested intentions.
-4. **Plan (`/plan`):** Rhythm-aware Allocation Board with unplaced intention shelf, recurring rhythm anchors, pointer/touch drag-and-drop, accessible dropdown placement, exact-time pinning, auto-arrangement, and Undo.
+### 1. Today (`/today`)
+The primary daily operating cockpit. Displays the current recommendation, active focus timer or completion state, day capacity breakdown, and a compact week ribbon.
+
+### 2. Week (`/week`)
+Seven-day horizon view displaying daily protected time, suggested allocations, and open capacity across all days without a noisy 24-hour grid.
+
+### 3. Day Detail (`/day/[date]`)
+Detailed day timeline showing exact times for anchored commitments and broad windows for suggested intentions.
+
+### 4. Responsive Option C Planner (`/plan`)
+Rhythm-aware Allocation Board engineered with a focused single-day canvas and week ribbon:
+- **7-Day Ribbon Navigation:** Clean pill-based day switcher displaying daily open capacity; scrolls horizontally with touch support on mobile.
+- **Focused Single-Day Canvas:** Spacious morning, afternoon, and evening window zones for the active day, reducing cognitive load compared to crowded multi-day grids.
+- **Sidebar Shelf:** Unplaced intentions and rhythm anchors with dynamic badge counts and in-place action triggers.
+- **Multi-Modal Placement:** Pointer/touch drag-and-drop powered by `@dnd-kit`, plus an accessible placement dropdown menu on every card for keyboard and screen reader navigation.
+- **Exact-Time Pinning:** Move any suggested allocation into a pinned commitment with custom start time.
+- **Auto-Arrangement & Undo:** One-click algorithmically arranges unplaced intentions with 90-minute daily open-capacity buffers, backed by single-step reversible Undo.
+
+### 5. Settings & Preferences (`/settings`)
+A centralized management console for cockpit personalization and local data hygiene:
+- **Master Rhythm Anchors:** Create, edit, and delete recurring anchors with customizable times and repeat patterns (daily, weekdays, or selected days).
+- **Day Schedule Boundaries:** Configure earliest available start and latest available end times for daily scheduling windows.
+- **Companion Voice Preferences:** Toggle audio mute, auto-play spoken orientation on navigation, and adjust speech playback rates (0.75x to 1.5x).
+- **Storage & Data Management:** Export full JSON backups, import/restore previous backups with runtime schema validation (`zod`), or reset to the default demo scenario.
+
+---
+
+## Dynamic In-Context Modals
+
+- **`IntentionModal` (`+ Add Intention` / `Edit Intention`):**
+  - Configures title, kind (`work` or `leisure`), duration (15 to 120 min), preferred window (`morning`, `afternoon`, `evening`, or flexible), and priority level (P1–P3).
+  - Full keyboard accessibility with Escape dismissal, autofocus, validation, and delete confirmation.
+- **`AnchorModal` (`+ Add Anchor` / `Edit Anchor`):**
+  - Configures title, start/end clock times (with HH:mm validation and duration checks), repeat pattern (daily, weekdays, selected day-of-week checkboxes), and protected commitment locking.
 
 ---
 
@@ -55,22 +85,23 @@ wellwisher.state.v1
   localStorage.removeItem('wellwisher.state.v1')
   location.reload()
   ```
-- Alternatively, click the profile avatar (`HD`) in the top navigation and select **Reset demo scenario**.
+- Alternatively, click the profile avatar (`HD`) in the top navigation and select **Reset demo scenario**, or navigate to `/settings` and click **Reset to Demo Scenario**.
 - **No Authentication / Server:** This MVP slice is entirely local-first and does not require credentials or a remote database.
 
 ---
 
 ## Intentional Architecture Seams
 
-Wellwisher is engineered with clear architectural seams to allow pluggable backend and device capabilities:
+Wellwisher is engineered with clear architectural seams to allow pluggable backend, cloud, and device capabilities:
 
-1. **Voice & Dictation Seam (`src/voice/types.ts`):**
+1. **Google Drive & Cloud Sync Seam (`src/state/persistence.ts` & `src/app/settings/`):**
+   - Versioned envelope repository pattern (`PersistedEnvelope`).
+   - JSON export and runtime schema validation ready for bidirectional cloud file sync (Google Drive, Dropbox, or iCloud).
+   - Cleanly decoupled from React components; ready to be backed by SQLite, CRDTs, or cloud sync adapters.
+2. **Voice & Dictation Seam (`src/voice/types.ts`):**
    - Clean `DictationAdapter` and `CompanionVoice` interfaces.
    - Includes a deterministic mock adapter (`mockVoice.ts`) and browser Web Speech API adapter (`browserDictation.ts`).
    - UI components (`VoiceDock`, `InlineComposer`) interact strictly through these interfaces, ready for future Whisper, cloud STT, or ElevenLabs/TTS providers.
-2. **Persistence Seam (`src/state/persistence.ts`):**
-   - Versioned envelope repository pattern (`PersistedEnvelope`).
-   - Cleanly decoupled from React components; ready to be replaced with SQLite, CRDTs, or cloud sync.
 3. **Planning & Recurrence Core (`src/domain/planning/`):**
    - Pure, zero-dependency domain algorithms for recurrence expansion (`recurrence.ts`), capacity math (`capacity.ts`), immutable week arrangement (`arrange-week.ts`), and mutations (`mutations.ts`).
    - Separated from React lifecycle and UI concerns.
@@ -99,7 +130,7 @@ pnpm typecheck
 # Lint with Next.js / ESLint
 pnpm lint
 
-# Run unit & component test suite with Vitest
+# Run unit & component test suite with Vitest (185+ tests)
 pnpm test
 
 # Run tests with coverage
@@ -108,7 +139,7 @@ pnpm test -- --coverage
 # Run Playwright End-to-End tests (Desktop & Mobile Chrome)
 pnpm test:e2e
 
-# Build optimized production bundle
+# Build optimized production bundle & static export
 pnpm build
 
 # Run production server

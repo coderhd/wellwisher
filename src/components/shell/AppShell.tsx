@@ -5,15 +5,17 @@ import { HeaderNav } from './HeaderNav'
 
 export interface AppShellProps {
 	children: React.ReactNode
-	activeSurface: 'today' | 'week' | 'plan'
+	activeSurface?: 'today' | 'week' | 'plan' | 'settings'
 	showVoiceDock?: boolean
 }
 
 export function AppShell ({
 	children,
-	activeSurface,
+	activeSurface = 'today',
 	showVoiceDock = true,
 }: AppShellProps): React.JSX.Element {
+	const voiceSurface = activeSurface === 'settings' ? 'today' : activeSurface
+
 	return (
 		<div className={styles.shell}>
 			<a href='#main-content' className={styles.skipLink}>
@@ -23,7 +25,7 @@ export function AppShell ({
 			<main id='main-content' className={styles.main} tabIndex={-1}>
 				{children}
 			</main>
-			{showVoiceDock && <VoiceDock activeSurface={activeSurface} />}
+			{showVoiceDock && <VoiceDock activeSurface={voiceSurface} />}
 		</div>
 	)
 }

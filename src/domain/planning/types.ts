@@ -94,8 +94,13 @@ export interface ArrangeWeekInput {
  * pinned exact placement; end is optional and otherwise derived from duration.
  */
 export interface MoveTarget {
-  date: string
-  window?: 'morning' | 'afternoon' | 'evening'
-  start?: string
-  end?: string
+	date: string
+	window?: 'morning' | 'afternoon' | 'evening'
+	start?: string
+	end?: string
+}
+
+export interface ScheduleBounds {
+	availableStart: string
+	availableEnd: string
 }

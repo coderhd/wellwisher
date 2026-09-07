@@ -322,3 +322,121 @@ describe('WellwisherProvider and selectors', () => {
 	})
 })
 
+describe('Dynamic CRUD actions', () => {
+	test('supports ADD_INTENTION, UPDATE_INTENTION, and DELETE_INTENTION', () => {
+		const initial = createDemoState()
+		const newIntention: FlexibleIntention = {
+			id: 'custom-art',
+			title: 'Painting & Sketching',
+			kind: 'leisure',
+			durationMinutes: 60,
+			preferredWindow: 'evening',
+			priority: 2,
+		}
+
+		// 1. ADD
+		const stateAfterAdd = wellwisherReducer(initial, {
+			type: 'ADD_INTENTION',
+			payload: newIntention,
+		})
+		expect(stateAfterAdd.intentions.some((i) => i.id === 'custom-art')).toBe(true)
+
+		// 2. UPDATE
+		const updatedIntention: FlexibleIntention = {
+			...newIntention,
+			title: 'Oil Painting',
+			durationMinutes: 90,
+		}
+		const stateAfterUpdate = wellwisherReducer(stateAfterAdd, {
+			type: 'UPDATE_INTENTION',
+			payload: updatedIntention,
+		})
+		const found = stateAfterUpdate.intentions.find((i) => i.id === 'custom-art')
+		expect(found?.title).toBe('Oil Painting')
+		expect(found?.durationMinutes).toBe(90)
+
+		// 3. DELETE (also removes any allocations referencing this intention)
+		const stateWithAlloc = wellwisherReducer(stateAfterUpdate, {
+			type: 'SUGGEST_INTENTION',
+			payload: {
+				intentionId: 'custom-art',
+				target: { date: initial.weekStart, window: 'evening' },
+			},
+		})
+		expect(stateWithAlloc.allocations.some((a) => a.intentionId === 'custom-art')).toBe(true)
+
+		const stateAfterDelete = wellwisherReducer(stateWithAlloc, {
+			type: 'DELETE_INTENTION',
+			payload: { intentionId: 'custom-art' },
+		})
+		expect(stateAfterDelete.intentions.some((i) => i.id === 'custom-art')).toBe(false)
+		expect(stateAfterDelete.allocations.some((a) => a.intentionId === 'custom-art')).toBe(false)
+	})
+
+	test('supports ADD_ANCHOR, UPDATE_ANCHOR, and DELETE_ANCHOR with recurrence sync', () => {
+		const initial = createDemoState()
+		const newAnchor: RhythmAnchor = {
+			id: 'evening-tea',
+			title: 'Evening Tea & Walk',
+			startTime: '17:00',
+			endTime: '17:45',
+			repeat: { type: 'daily' },
+			protected: true,
+		}
+
+		// 1. ADD_ANCHOR
+		const stateAfterAdd = wellwisherReducer(initial, {
+			type: 'ADD_ANCHOR',
+			payload: newAnchor,
+		})
+		expect(stateAfterAdd.anchors.some((a) => a.id === 'evening-tea')).toBe(true)
+		expect(stateAfterAdd.protectedCommitments.filter((c) => c.anchorId === 'evening-tea')).toHaveLength(7)
+
+		// 2. UPDATE_ANCHOR
+		const updatedAnchor: RhythmAnchor = {
+			...newAnchor,
+			title: 'Herbal Tea & Garden Walk',
+			startTime: '17:15',
+			endTime: '18:00',
+		}
+		const stateAfterUpdate = wellwisherReducer(stateAfterAdd, {
+			type: 'UPDATE_ANCHOR',
+			payload: updatedAnchor,
+		})
+		expect(stateAfterUpdate.anchors.find((a) => a.id === 'evening-tea')?.title).toBe('Herbal Tea & Garden Walk')
+		const updatedCommitments = stateAfterUpdate.protectedCommitments.filter((c) => c.anchorId === 'evening-tea')
+		expect(updatedCommitments).toHaveLength(7)
+		expect(updatedCommitments[0]?.startTime).toBe('17:15')
+
+		// 3. DELETE_ANCHOR
+		const stateAfterDelete = wellwisherReducer(stateAfterUpdate, {
+			type: 'DELETE_ANCHOR',
+			payload: { anchorId: 'evening-tea' },
+		})
+		expect(stateAfterDelete.anchors.some((a) => a.id === 'evening-tea')).toBe(false)
+		expect(stateAfterDelete.protectedCommitments.some((c) => c.anchorId === 'evening-tea')).toBe(false)
+	})
+
+	test('supports UPDATE_SCHEDULE_BOUNDS and IMPORT_STATE', () => {
+		const initial = createDemoState()
+		const stateAfterBounds = wellwisherReducer(initial, {
+			type: 'UPDATE_SCHEDULE_BOUNDS',
+			payload: { availableStart: '07:30', availableEnd: '22:30' },
+		})
+		expect(stateAfterBounds.scheduleBounds?.availableStart).toBe('07:30')
+		expect(stateAfterBounds.scheduleBounds?.availableEnd).toBe('22:30')
+
+		const imported: WellwisherState = {
+			...initial,
+			weekStart: '2026-10-01',
+			intentions: [],
+		}
+		const stateAfterImport = wellwisherReducer(stateAfterBounds, {
+			type: 'IMPORT_STATE',
+			payload: imported,
+		})
+		expect(stateAfterImport.weekStart).toBe('2026-10-01')
+		expect(stateAfterImport.intentions).toHaveLength(0)
+	})
+})
+

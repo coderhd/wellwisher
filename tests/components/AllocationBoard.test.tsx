@@ -15,7 +15,7 @@ import type {
 } from '../../src/domain/planning/types'
 import { WellwisherProvider } from '../../src/state/WellwisherProvider'
 
-describe('AllocationBoard and Planning Components', () => {
+describe('AllocationBoard Option C (7-Day Ribbon + Focused Single-Day Canvas)', () => {
 	const mockWeekPlan: WeekPlan = {
 		weekStart: '2026-09-07',
 		days: [
@@ -156,6 +156,99 @@ describe('AllocationBoard and Planning Components', () => {
 		},
 	]
 
+	it('renders 7-day ribbon navigation with capacity summaries for each day', () => {
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+			/>,
+		)
+
+		const ribbon = screen.getByRole('navigation', {
+			name: /days of the week|week ribbon/i,
+		})
+		expect(ribbon).toBeInTheDocument()
+
+		// Verify 7 day pills are present in ribbon
+		const monButton = screen.getByRole('button', {
+			name: /mon.*sep 7/i,
+		})
+		const tueButton = screen.getByRole('button', {
+			name: /tue.*sep 8/i,
+		})
+		const wedButton = screen.getByRole('button', {
+			name: /wed.*sep 9/i,
+		})
+		expect(monButton).toBeInTheDocument()
+		expect(tueButton).toBeInTheDocument()
+		expect(wedButton).toBeInTheDocument()
+
+		// Active day indicator for initially selected day (Monday)
+		expect(monButton).toHaveAttribute('aria-current', 'date')
+	})
+
+	it('switches focused single-day drop zones when a day pill is clicked', async () => {
+		const user = userEvent.setup()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+			/>,
+		)
+
+		// Initially Monday is focused: contains AI Engineering and Morning rhythm
+		expect(screen.getByText('AI Engineering')).toBeInTheDocument()
+		expect(screen.getByText('Morning rhythm')).toBeInTheDocument()
+		expect(screen.queryByText('Lekhan')).not.toBeInTheDocument()
+
+		// Click Tuesday pill in ribbon
+		const tueButton = screen.getByRole('button', {
+			name: /tue.*sep 8/i,
+		})
+		await user.click(tueButton)
+
+		// Active indicator moves to Tuesday
+		expect(tueButton).toHaveAttribute('aria-current', 'date')
+
+		// Tuesday canvas is now rendered with Lekhan pinned
+		expect(screen.getByText('Lekhan')).toBeInTheDocument()
+		expect(screen.getByText(/10:00 - 10:45/)).toBeInTheDocument()
+		expect(screen.getByText('Pinned')).toBeInTheDocument()
+
+		// Monday commitments are no longer shown in the single-day canvas
+		expect(screen.queryByText('Morning rhythm')).not.toBeInTheDocument()
+	})
+
+	it('renders three distinct time window drop zones (Morning, Afternoon, Evening) for the focused day', () => {
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+			/>,
+		)
+
+		expect(screen.getByTestId('drop-zone-2026-09-07-morning')).toBeInTheDocument()
+		expect(screen.getByTestId('drop-zone-2026-09-07-afternoon')).toBeInTheDocument()
+		expect(screen.getByTestId('drop-zone-2026-09-07-evening')).toBeInTheDocument()
+
+		expect(screen.getByText('06:00 – 12:00')).toBeInTheDocument()
+		expect(screen.getByText('12:00 – 18:00')).toBeInTheDocument()
+		expect(screen.getByText('18:00 – 24:00')).toBeInTheDocument()
+	})
+
 	it('renders intention shelf with work and leisure items as first-class citizens', () => {
 		const onSuggest = vi.fn()
 		const onPin = vi.fn()
@@ -228,12 +321,232 @@ describe('AllocationBoard and Planning Components', () => {
 		expect(screen.getByText(/13:30 - 14:30/)).toBeInTheDocument()
 		expect(screen.getByText('Gym')).toBeInTheDocument()
 
-		// Protected commitments on day columns are rendered as non-draggable protected items
+		// Protected commitments on focused Monday are rendered as non-draggable protected items
 		const protectedCommitment = screen.getByText('Morning rhythm')
 		expect(protectedCommitment).toBeInTheDocument()
 		expect(
 			screen.getAllByText(/protected/i).length,
 		).toBeGreaterThanOrEqual(1)
+	})
+
+	it('opens IntentionModal when "+ Add Intention" button is clicked and triggers onAddIntention', async () => {
+		const user = userEvent.setup()
+		const onAddIntention = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onAddIntention={onAddIntention}
+			/>,
+		)
+
+		const addIntentionBtn = screen.getByRole('button', {
+			name: /\+ add intention|add intention/i,
+		})
+		expect(addIntentionBtn).toBeInTheDocument()
+
+		await user.click(addIntentionBtn)
+
+		// Modal opens
+		expect(
+			screen.getByRole('heading', { name: /new intention/i }),
+		).toBeInTheDocument()
+
+		const titleInput = screen.getByLabelText(/title/i)
+		await user.type(titleInput, 'Deep Focus Session')
+
+		const createBtn = screen.getByRole('button', {
+			name: /create intention/i,
+		})
+		await user.click(createBtn)
+
+		expect(onAddIntention).toHaveBeenCalledWith(
+			expect.objectContaining({
+				title: 'Deep Focus Session',
+				kind: 'work',
+			}),
+		)
+	})
+
+	it('opens IntentionModal in edit mode when Edit button on card is clicked and triggers onEditIntention', async () => {
+		const user = userEvent.setup()
+		const onEditIntention = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onEditIntention={onEditIntention}
+			/>,
+		)
+
+		const editBtn = screen.getByRole('button', {
+			name: /edit trending learning/i,
+		})
+		await user.click(editBtn)
+
+		expect(
+			screen.getByRole('heading', { name: /edit intention/i }),
+		).toBeInTheDocument()
+		const titleInput = screen.getByLabelText(/title/i)
+		expect(titleInput).toHaveValue('Trending learning')
+
+		await user.clear(titleInput)
+		await user.type(titleInput, 'Advanced Trending Learning')
+
+		const saveBtn = screen.getByRole('button', {
+			name: /save changes/i,
+		})
+		await user.click(saveBtn)
+
+		expect(onEditIntention).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: 'trending-learning',
+				title: 'Advanced Trending Learning',
+			}),
+		)
+	})
+
+	it('triggers onDeleteIntention when Delete button on intention card is clicked', async () => {
+		const user = userEvent.setup()
+		const onDeleteIntention = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onDeleteIntention={onDeleteIntention}
+			/>,
+		)
+
+		const deleteBtn = screen.getByRole('button', {
+			name: /delete trending learning/i,
+		})
+		await user.click(deleteBtn)
+
+		expect(onDeleteIntention).toHaveBeenCalledWith('trending-learning')
+	})
+
+	it('opens AnchorModal when "+ Add Anchor" button is clicked and triggers onAddAnchor', async () => {
+		const user = userEvent.setup()
+		const onAddAnchor = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onAddAnchor={onAddAnchor}
+			/>,
+		)
+
+		const addAnchorBtn = screen.getByRole('button', {
+			name: /\+ add anchor|add anchor/i,
+		})
+		expect(addAnchorBtn).toBeInTheDocument()
+
+		await user.click(addAnchorBtn)
+
+		expect(
+			screen.getByRole('heading', { name: /new rhythm anchor/i }),
+		).toBeInTheDocument()
+
+		const titleInput = screen.getByLabelText(/title/i)
+		await user.type(titleInput, 'Morning Tea')
+
+		const createBtn = screen.getByRole('button', {
+			name: /create rhythm anchor/i,
+		})
+		await user.click(createBtn)
+
+		expect(onAddAnchor).toHaveBeenCalledWith(
+			expect.objectContaining({
+				title: 'Morning Tea',
+			}),
+		)
+	})
+
+	it('opens AnchorModal in edit mode when Edit anchor button is clicked and triggers onEditAnchor', async () => {
+		const user = userEvent.setup()
+		const onEditAnchor = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onEditAnchor={onEditAnchor}
+			/>,
+		)
+
+		const editBtn = screen.getByRole('button', {
+			name: /edit lunch/i,
+		})
+		await user.click(editBtn)
+
+		expect(
+			screen.getByRole('heading', { name: /edit rhythm anchor/i }),
+		).toBeInTheDocument()
+		const titleInput = screen.getByLabelText(/title/i)
+		expect(titleInput).toHaveValue('Lunch')
+
+		await user.clear(titleInput)
+		await user.type(titleInput, 'Executive Lunch')
+
+		const saveBtn = screen.getByRole('button', {
+			name: /save changes/i,
+		})
+		await user.click(saveBtn)
+
+		expect(onEditAnchor).toHaveBeenCalledWith(
+			expect.objectContaining({
+				id: 'lunch',
+				title: 'Executive Lunch',
+			}),
+		)
+	})
+
+	it('triggers onDeleteAnchor when Delete button on rhythm anchor is clicked', async () => {
+		const user = userEvent.setup()
+		const onDeleteAnchor = vi.fn()
+
+		render(
+			<AllocationBoard
+				weekPlan={mockWeekPlan}
+				unplacedIntentions={mockUnplacedIntentions}
+				intentions={mockIntentions}
+				anchors={mockAnchors}
+				onSuggest={vi.fn()}
+				onPin={vi.fn()}
+				onDeleteAnchor={onDeleteAnchor}
+			/>,
+		)
+
+		const deleteBtn = screen.getByRole('button', {
+			name: /delete lunch/i,
+		})
+		await user.click(deleteBtn)
+
+		expect(onDeleteAnchor).toHaveBeenCalledWith('lunch')
 	})
 
 	it('provides accessible menu fallback for keyboard users to suggest intentions without dragging', async () => {
@@ -348,28 +661,6 @@ describe('AllocationBoard and Planning Components', () => {
 		await user.type(timeInput, '14:30')
 		await user.click(confirmPinButton)
 		expect(onPin).toHaveBeenCalledWith('alloc-test', '14:30')
-	})
-
-	it('distinguishes pinned allocations with exact start times from suggested ones', () => {
-		render(
-			<AllocationBoard
-				weekPlan={mockWeekPlan}
-				unplacedIntentions={[]}
-				intentions={mockIntentions}
-				anchors={mockAnchors}
-				onSuggest={vi.fn()}
-				onPin={vi.fn()}
-			/>,
-		)
-
-		// Lekhan is pinned on Tuesday with 10:00 - 10:45
-		expect(screen.getByText('Lekhan')).toBeInTheDocument()
-		expect(screen.getByText(/10:00 - 10:45/)).toBeInTheDocument()
-		expect(screen.getByText('Pinned')).toBeInTheDocument()
-
-		// AI Engineering is suggested on Monday
-		expect(screen.getByText('AI Engineering')).toBeInTheDocument()
-		expect(screen.getByText('Suggested')).toBeInTheDocument()
 	})
 
 	it('calls onArrange when "Arrange my week" button is clicked', async () => {
@@ -506,6 +797,11 @@ describe('AllocationBoard and Planning Components', () => {
 			screen.getByText(
 				/these are suggestions, not commitments\. pin to a time after placing\./i,
 			),
+		).toBeInTheDocument()
+
+		// Ribbon navigation is rendered
+		expect(
+			screen.getByRole('navigation', { name: /days of the week|week ribbon/i }),
 		).toBeInTheDocument()
 
 		// Arrange my week button
